@@ -58,30 +58,29 @@ const LoginPage = () => {
         }}
       />
 
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-sm">
         {/* Logo e nome */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-4"
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
             style={{ background: 'linear-gradient(135deg, #f97316, #ea6c10)', boxShadow: '0 0 40px rgba(249,115,22,0.3)' }}>
-            {/* Ícone de ferramenta industrial */}
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
               <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
             </svg>
           </div>
-          <h1 className="text-3xl font-bold" style={{ color: '#e0e0ec' }}>
+          <h1 className="text-2xl font-bold" style={{ color: '#e0e0ec' }}>
             4u <span style={{ color: '#f97316' }}>Serralheiro</span>
           </h1>
-          <p className="mt-2 text-sm" style={{ color: '#8a8a9a' }}>
+          <p className="mt-1 text-sm" style={{ color: '#8a8a9a' }}>
             Sistema de gestão para serralherias
           </p>
         </div>
 
         {/* Card de login */}
         <div
-          className="rounded-2xl p-8"
+          className="rounded-2xl p-6"
           style={{ background: '#1a1a1f', border: '1px solid #2e2e35', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}
         >
-          <h2 className="text-xl font-semibold mb-6" style={{ color: '#e0e0ec' }}>
+          <h2 className="text-lg font-semibold mb-5" style={{ color: '#e0e0ec' }}>
             Entrar na sua conta
           </h2>
 
