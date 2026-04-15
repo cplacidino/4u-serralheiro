@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -7,7 +7,7 @@ import toast from 'react-hot-toast'
 import { useAuth } from '../contexts/AuthContext'
 
 const loginSchema = z.object({
-  email: z.string().email('E-mail inválido'),
+  email: z.email('E-mail inválido'),
   password: z.string().min(1, 'Senha é obrigatória'),
 })
 
@@ -15,6 +15,7 @@ const LoginPage = () => {
   const { login, user } = useAuth()
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
+  const [loginError, setLoginError] = useState('')
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(loginSchema),
@@ -29,12 +30,14 @@ const LoginPage = () => {
 
   const onSubmit = async (data) => {
     setIsLoading(true)
+    setLoginError('')
     try {
       const userData = await login(data.email, data.password)
       toast.success(`Bem-vindo, ${userData.name}!`)
       navigate(userData.role === 'superadmin' ? '/admin' : '/dashboard', { replace: true })
     } catch (error) {
       const message = error.response?.data?.message || 'Erro ao fazer login. Tente novamente.'
+      setLoginError(message)
       toast.error(message)
     } finally {
       setIsLoading(false)
@@ -82,7 +85,7 @@ const LoginPage = () => {
             Entrar na sua conta
           </h2>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" autoComplete="off">
             {/* Campo E-mail */}
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: '#b8b8c8' }}>
@@ -91,6 +94,7 @@ const LoginPage = () => {
               <input
                 {...register('email')}
                 type="email"
+                autoComplete="off"
                 placeholder="seu@email.com"
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
                 style={{
@@ -114,6 +118,7 @@ const LoginPage = () => {
               <input
                 {...register('password')}
                 type="password"
+                autoComplete="new-password"
                 placeholder="••••••••"
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
                 style={{
@@ -128,6 +133,13 @@ const LoginPage = () => {
                 <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{errors.password.message}</p>
               )}
             </div>
+
+            {/* Erro de login */}
+            {loginError && (
+              <div className="rounded-xl px-4 py-3 text-sm" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444' }}>
+                {loginError}
+              </div>
+            )}
 
             {/* Botão de login */}
             <button

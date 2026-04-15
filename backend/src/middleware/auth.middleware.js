@@ -55,4 +55,12 @@ const restrict = (...roles) => {
   };
 };
 
-module.exports = { protect, restrict };
+// Garante que o usuário pertence a uma empresa (bloqueia superadmin nas rotas /s/)
+const requireCompany = (req, res, next) => {
+  if (!req.user.company) {
+    return sendError(res, 'Acesso negado: usuário não pertence a nenhuma empresa.', 403);
+  }
+  next();
+};
+
+module.exports = { protect, restrict, requireCompany };

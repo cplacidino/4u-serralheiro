@@ -9,13 +9,13 @@ import api from '../../services/api'
 // ─── Validação do formulário de criação ───
 const schema = z.object({
   name: z.string().min(2, 'Nome obrigatório'),
-  email: z.string().email('E-mail inválido'),
+  email: z.email('E-mail inválido'),
   phone: z.string().optional(),
   cnpj: z.string().optional(),
   planId: z.string().min(1, 'Selecione um plano'),
   durationMonths: z.coerce.number().min(1).max(36),
   ownerName: z.string().min(2, 'Nome do responsável obrigatório'),
-  ownerEmail: z.string().email('E-mail do responsável inválido'),
+  ownerEmail: z.email('E-mail do responsável inválido'),
   ownerPassword: z.string().min(8, 'Senha mínima de 8 caracteres'),
 })
 

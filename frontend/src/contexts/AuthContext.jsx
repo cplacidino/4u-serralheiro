@@ -40,8 +40,16 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
   }
 
+  const updateUser = (fields) => {
+    setUser(prev => {
+      const updated = { ...prev, ...fields }
+      tokenStore.setUser(updated)
+      return updated
+    })
+  }
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

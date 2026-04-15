@@ -1,4 +1,13 @@
 require('dotenv').config();
+
+// Valida variáveis obrigatórias antes de iniciar
+const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET', 'ADMIN_EMAIL', 'ADMIN_PASSWORD'];
+const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
+if (missing.length) {
+  console.error(`❌ Variáveis de ambiente ausentes: ${missing.join(', ')}`);
+  process.exit(1);
+}
+
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -61,7 +70,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api', routes);
 
 // ─── Rota não encontrada ──────────────────────────────────────
-app.use('*', (req, res) => {
+app.use('*', (_req, res) => {
   res.status(404).json({ success: false, message: 'Rota não encontrada' });
 });
 

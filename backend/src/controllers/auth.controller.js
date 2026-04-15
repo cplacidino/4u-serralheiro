@@ -4,7 +4,6 @@ const UAParser = require('ua-parser-js');
 const User = require('../models/User');
 const Session = require('../models/Session');
 const Company = require('../models/Company');
-const Plan = require('../models/Plan');
 const { sendSuccess, sendError } = require('../utils/response');
 
 // Gera um hash do token para salvar no banco (não salvamos o token direto por segurança)
@@ -116,7 +115,8 @@ const login = async (req, res) => {
 // ─────────────────────────────────────────────
 const logout = async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
     if (token) {
       await Session.findOneAndUpdate(
         { tokenHash: hashToken(token) },

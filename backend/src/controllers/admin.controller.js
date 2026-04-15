@@ -7,12 +7,11 @@ const { sendSuccess, sendError } = require('../utils/response');
 // ─────────────────────────────────────────────
 // GET /api/admin/stats — Estatísticas do painel
 // ─────────────────────────────────────────────
-const getStats = async (req, res) => {
+const getStats = async (_req, res) => {
   try {
-    const [totalCompanies, activeCompanies, plans] = await Promise.all([
+    const [totalCompanies, activeCompanies] = await Promise.all([
       Company.countDocuments(),
       Company.countDocuments({ isActive: true, planExpiresAt: { $gt: new Date() } }),
-      Plan.find({ isActive: true }),
     ]);
 
     // Conta empresas por plano e calcula receita
@@ -72,13 +71,17 @@ const getCompanies = async (req, res) => {
       .skip((page - 1) * limit)
       .limit(Number(limit));
 
-    // Conta usuários de cada empresa
-    const companiesWithUsers = await Promise.all(
-      companies.map(async (company) => {
-        const userCount = await User.countDocuments({ company: company._id, isActive: true });
-        return { ...company.toObject(), userCount };
-      })
-    );
+    // Conta usuários de cada empresa com uma única query
+    const companyIds = companies.map((c) => c._id);
+    const userCounts = await User.aggregate([
+      { $match: { company: { $in: companyIds }, isActive: true } },
+      { $group: { _id: '$company', count: { $sum: 1 } } },
+    ]);
+    const userCountMap = Object.fromEntries(userCounts.map((u) => [u._id.toString(), u.count]));
+    const companiesWithUsers = companies.map((c) => ({
+      ...c.toObject(),
+      userCount: userCountMap[c._id.toString()] ?? 0,
+    }));
 
     return sendSuccess(res, {
       companies: companiesWithUsers,
@@ -182,7 +185,7 @@ const updateCompany = async (req, res) => {
 // ─────────────────────────────────────────────
 // GET /api/admin/plans — Listar planos
 // ─────────────────────────────────────────────
-const getPlans = async (req, res) => {
+const getPlans = async (_req, res) => {
   try {
     const plans = await Plan.find().sort({ price: 1 });
     return sendSuccess(res, { plans });
