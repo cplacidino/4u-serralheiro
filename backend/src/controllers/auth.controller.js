@@ -55,23 +55,6 @@ const login = async (req, res) => {
       if (!plan) {
         return sendError(res, 'Plano da empresa não encontrado. Entre em contato com o administrador.', 403);
       }
-
-      // Verifica limite de sessões simultâneas (o coração do controle de acesso)
-      if (plan.maxSessions !== -1) {
-        const activeSessions = await Session.countDocuments({
-          company: company._id,
-          isActive: true,
-          expiresAt: { $gt: new Date() },
-        });
-
-        if (activeSessions >= plan.maxSessions) {
-          return sendError(
-            res,
-            `Limite de ${plan.maxSessions} acesso(s) simultâneo(s) do plano ${plan.name} atingido. Faça logout em outro dispositivo ou entre em contato com o administrador.`,
-            403
-          );
-        }
-      }
     }
 
     // 4. Gera o token JWT
