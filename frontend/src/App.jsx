@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './contexts/AuthContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 
@@ -26,13 +27,14 @@ import OrdensServicoPage from './pages/serralheiro/OrdensServicoPage'
 function App() {
   return (
     <BrowserRouter>
+      <ThemeProvider>
       <AuthProvider>
         <Toaster
           position="top-right"
           toastOptions={{
-            style: { background: '#242429', color: '#e0e0ec', border: '1px solid #3d3d47' },
-            success: { iconTheme: { primary: '#22c55e', secondary: '#242429' } },
-            error: { iconTheme: { primary: '#ef4444', secondary: '#242429' } },
+            style: { background: 'var(--c-bg2)', color: 'var(--c-tx0)', border: '1px solid var(--c-bd1)' },
+            success: { iconTheme: { primary: '#22c55e', secondary: 'var(--c-bg2)' } },
+            error: { iconTheme: { primary: '#ef4444', secondary: 'var(--c-bg2)' } },
           }}
         />
 
@@ -74,6 +76,7 @@ function App() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   )
 }

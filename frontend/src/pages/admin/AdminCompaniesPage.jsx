@@ -12,9 +12,9 @@ import api from '../../services/api'
 
 // ─── Helpers de estilo ───
 const inputSt = (err) => ({
-  background: '#242429',
-  border: `1px solid ${err ? '#ef4444' : '#3d3d47'}`,
-  color: '#e0e0ec',
+  background: 'var(--c-bg2)',
+  border: `1px solid ${err ? '#ef4444' : 'var(--c-bd1)'}`,
+  color: 'var(--c-tx0)',
   borderRadius: 12,
   padding: '10px 14px',
   fontSize: 14,
@@ -24,7 +24,7 @@ const inputSt = (err) => ({
 
 const Field = ({ label, error, children }) => (
   <div>
-    <label className="block text-sm font-medium mb-1.5" style={{ color: '#b8b8c8' }}>{label}</label>
+    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>{label}</label>
     {children}
     {error && <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{error}</p>}
   </div>
@@ -63,10 +63,10 @@ const CreateCompanyModal = ({ onClose, plans, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
-      <div className="w-full max-w-2xl rounded-2xl overflow-y-auto max-h-[90vh]" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-        <div className="p-6" style={{ borderBottom: '1px solid #2e2e35' }}>
-          <h2 className="text-lg font-bold" style={{ color: '#e0e0ec' }}>Nova Empresa</h2>
-          <p className="text-sm mt-1" style={{ color: '#8a8a9a' }}>Preencha os dados da serralheria e do responsável</p>
+      <div className="w-full max-w-2xl rounded-2xl overflow-y-auto max-h-[90vh]" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+        <div className="p-6" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+          <h2 className="text-lg font-bold" style={{ color: 'var(--c-tx0)' }}>Nova Empresa</h2>
+          <p className="text-sm mt-1" style={{ color: 'var(--c-tx2)' }}>Preencha os dados da serralheria e do responsável</p>
         </div>
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
           <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#f97316' }}>Dados da Empresa</p>
@@ -109,7 +109,7 @@ const CreateCompanyModal = ({ onClose, plans, onSuccess }) => {
           </div>
           <div className="flex gap-3 pt-4">
             <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl text-sm font-medium"
-              style={{ background: '#2e2e35', color: '#b8b8c8' }}>Cancelar</button>
+              style={{ background: 'var(--c-bd0)', color: 'var(--c-tx1)' }}>Cancelar</button>
             <button type="submit" disabled={isSubmitting} className="flex-1 py-3 rounded-xl text-sm font-semibold"
               style={{ background: 'linear-gradient(135deg, #f97316, #ea6c10)', color: 'white', opacity: isSubmitting ? 0.7 : 1 }}>
               {isSubmitting ? 'Salvando...' : 'Criar Empresa'}
@@ -143,20 +143,20 @@ const ResetPasswordModal = ({ user, companyId, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)' }}>
-      <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
+      <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold" style={{ color: '#e0e0ec' }}>Redefinir Senha</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg" style={{ color: '#5c5c6b' }}><X size={16} /></button>
+          <h3 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>Redefinir Senha</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg" style={{ color: 'var(--c-tx3)' }}><X size={16} /></button>
         </div>
-        <p className="text-sm mb-4" style={{ color: '#8a8a9a' }}>
-          Nova senha para <strong style={{ color: '#e0e0ec' }}>{user.name}</strong>
+        <p className="text-sm mb-4" style={{ color: 'var(--c-tx2)' }}>
+          Nova senha para <strong style={{ color: 'var(--c-tx0)' }}>{user.name}</strong>
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input type="password" value={password} onChange={e => setPassword(e.target.value)}
             placeholder="Nova senha (mín. 8 caracteres)" style={inputSt(false)} />
           <div className="flex gap-3">
             <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm"
-              style={{ background: '#2e2e35', color: '#b8b8c8' }}>Cancelar</button>
+              style={{ background: 'var(--c-bd0)', color: 'var(--c-tx1)' }}>Cancelar</button>
             <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
               style={{ background: 'linear-gradient(135deg, #f97316, #ea6c10)', color: 'white', opacity: saving ? 0.7 : 1 }}>
               {saving ? 'Salvando...' : 'Redefinir'}
@@ -194,29 +194,29 @@ const CreateUserModal = ({ company, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)' }}>
-      <div className="w-full max-w-sm rounded-2xl overflow-hidden" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-        <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: '1px solid #2e2e35' }}>
+      <div className="w-full max-w-sm rounded-2xl overflow-hidden" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+        <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
           <div>
-            <h3 className="text-base font-bold" style={{ color: '#e0e0ec' }}>Novo Usuário</h3>
-            <p className="text-xs mt-0.5" style={{ color: '#5c5c6b' }}>{company.name}</p>
+            <h3 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>Novo Usuário</h3>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>{company.name}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg" style={{ color: '#5c5c6b' }}><X size={16} /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg" style={{ color: 'var(--c-tx3)' }}><X size={16} /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>Nome *</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Nome *</label>
             <input value={form.name} onChange={set('name')} placeholder="Nome completo" style={inputSt(false)} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>E-mail *</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>E-mail *</label>
             <input type="email" value={form.email} onChange={set('email')} placeholder="usuario@email.com" style={inputSt(false)} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>Senha * (mín. 8 caracteres)</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Senha * (mín. 8 caracteres)</label>
             <input type="password" value={form.password} onChange={set('password')} placeholder="••••••••" style={inputSt(false)} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>Perfil</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Perfil</label>
             <select value={form.role} onChange={set('role')} style={inputSt(false)}>
               <option value="employee">Funcionário</option>
               <option value="owner">Proprietário</option>
@@ -224,7 +224,7 @@ const CreateUserModal = ({ company, onClose, onSuccess }) => {
           </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm"
-              style={{ background: '#2e2e35', color: '#b8b8c8' }}>Cancelar</button>
+              style={{ background: 'var(--c-bd0)', color: 'var(--c-tx1)' }}>Cancelar</button>
             <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
               style={{ background: 'linear-gradient(135deg, #f97316, #ea6c10)', color: 'white', opacity: saving ? 0.7 : 1 }}>
               {saving ? 'Criando...' : 'Criar Usuário'}
@@ -314,16 +314,16 @@ const CompanyPanel = ({ company, plans, onClose, onRefresh }) => {
     <>
       <div className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.5)' }} onClick={onClose} />
       <div className="fixed top-0 right-0 h-full z-50 flex flex-col overflow-hidden"
-        style={{ width: '100%', maxWidth: 480, background: '#1a1a1f', borderLeft: '1px solid #2e2e35' }}>
+        style={{ width: '100%', maxWidth: 480, background: 'var(--c-bg1)', borderLeft: '1px solid var(--c-bd0)' }}>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: '1px solid #2e2e35' }}>
+        <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
           <div className="min-w-0">
-            <h2 className="text-base font-bold truncate" style={{ color: '#e0e0ec' }}>{company.name}</h2>
-            <p className="text-xs mt-0.5 truncate" style={{ color: '#5c5c6b' }}>{company.email}</p>
+            <h2 className="text-base font-bold truncate" style={{ color: 'var(--c-tx0)' }}>{company.name}</h2>
+            <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--c-tx3)' }}>{company.email}</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl flex-shrink-0 ml-3"
-            style={{ background: '#2e2e35', color: '#8a8a9a' }}>
+            style={{ background: 'var(--c-bd0)', color: 'var(--c-tx2)' }}>
             <X size={18} />
           </button>
         </div>
@@ -333,7 +333,7 @@ const CompanyPanel = ({ company, plans, onClose, onRefresh }) => {
           {[['detalhes', 'Detalhes'], ['usuarios', 'Usuários']].map(([key, label]) => (
             <button key={key} onClick={() => setTab(key)}
               className="px-4 py-2 rounded-xl text-sm font-medium"
-              style={{ background: tab === key ? 'rgba(249,115,22,0.18)' : '#242429', color: tab === key ? '#f97316' : '#8a8a9a' }}>
+              style={{ background: tab === key ? 'rgba(249,115,22,0.18)' : 'var(--c-bg2)', color: tab === key ? '#f97316' : 'var(--c-tx2)' }}>
               {label}
             </button>
           ))}
@@ -366,17 +366,17 @@ const CompanyPanel = ({ company, plans, onClose, onRefresh }) => {
 
               {/* Formulário de edição */}
               {editMode ? (
-                <div className="rounded-2xl p-4 space-y-3" style={{ background: '#242429', border: '1px solid #3d3d47' }}>
+                <div className="rounded-2xl p-4 space-y-3" style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)' }}>
                   <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#f97316' }}>Editar Empresa</p>
                   {[['Nome', 'name', 'text'], ['E-mail', 'email', 'email'], ['Telefone', 'phone', 'text'], ['CNPJ', 'cnpj', 'text']].map(([lbl, f, t]) => (
                     <div key={f}>
-                      <label className="block text-xs mb-1" style={{ color: '#8a8a9a' }}>{lbl}</label>
+                      <label className="block text-xs mb-1" style={{ color: 'var(--c-tx2)' }}>{lbl}</label>
                       <input type={t} value={editData[f]} onChange={e => setEditData(d => ({ ...d, [f]: e.target.value }))}
                         style={{ ...inputSt(false), padding: '8px 12px', fontSize: 13 }} />
                     </div>
                   ))}
                   <div>
-                    <label className="block text-xs mb-1" style={{ color: '#8a8a9a' }}>Plano</label>
+                    <label className="block text-xs mb-1" style={{ color: 'var(--c-tx2)' }}>Plano</label>
                     <select value={editData.planId} onChange={e => setEditData(d => ({ ...d, planId: e.target.value }))}
                       style={{ ...inputSt(false), padding: '8px 12px', fontSize: 13 }}>
                       <option value="">Selecione...</option>
@@ -385,7 +385,7 @@ const CompanyPanel = ({ company, plans, onClose, onRefresh }) => {
                   </div>
                   <div className="flex gap-2 pt-1">
                     <button onClick={() => setEditMode(false)} className="flex-1 py-2 rounded-xl text-sm"
-                      style={{ background: '#3d3d47', color: '#b8b8c8' }}>Cancelar</button>
+                      style={{ background: 'var(--c-bd1)', color: 'var(--c-tx1)' }}>Cancelar</button>
                     <button onClick={handleSaveEdit} disabled={savingEdit} className="flex-1 py-2 rounded-xl text-sm font-semibold"
                       style={{ background: 'linear-gradient(135deg, #f97316, #ea6c10)', color: 'white', opacity: savingEdit ? 0.7 : 1 }}>
                       {savingEdit ? 'Salvando...' : 'Salvar'}
@@ -393,11 +393,11 @@ const CompanyPanel = ({ company, plans, onClose, onRefresh }) => {
                   </div>
                 </div>
               ) : (
-                <div className="rounded-2xl p-4 space-y-2.5" style={{ background: '#242429', border: '1px solid #3d3d47' }}>
+                <div className="rounded-2xl p-4 space-y-2.5" style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)' }}>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c5c6b' }}>Informações</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--c-tx3)' }}>Informações</p>
                     <button onClick={() => setEditMode(true)} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg"
-                      style={{ background: '#3d3d47', color: '#b8b8c8' }}>
+                      style={{ background: 'var(--c-bd1)', color: 'var(--c-tx1)' }}>
                       <Pencil size={12} /> Editar
                     </button>
                   </div>
@@ -409,16 +409,16 @@ const CompanyPanel = ({ company, plans, onClose, onRefresh }) => {
                     ['Cadastrado em', fmtDate(company.createdAt)],
                   ].map(([label, value]) => (
                     <div key={label} className="flex items-center justify-between">
-                      <span className="text-xs" style={{ color: '#8a8a9a' }}>{label}</span>
-                      <span className="text-xs font-medium" style={{ color: '#e0e0ec' }}>{value}</span>
+                      <span className="text-xs" style={{ color: 'var(--c-tx2)' }}>{label}</span>
+                      <span className="text-xs font-medium" style={{ color: 'var(--c-tx0)' }}>{value}</span>
                     </div>
                   ))}
                 </div>
               )}
 
               {/* Estender plano */}
-              <div className="rounded-2xl p-4" style={{ background: '#242429', border: '1px solid #3d3d47' }}>
-                <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#5c5c6b' }}>
+              <div className="rounded-2xl p-4" style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)' }}>
+                <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--c-tx3)' }}>
                   Estender Plano
                 </p>
                 <div className="flex gap-2">
@@ -431,8 +431,8 @@ const CompanyPanel = ({ company, plans, onClose, onRefresh }) => {
                     {savingMonths ? '...' : 'Adicionar'}
                   </button>
                 </div>
-                <p className="text-xs mt-2" style={{ color: '#5c5c6b' }}>
-                  Vence em: <span style={{ color: isExpired(company.planExpiresAt) ? '#ef4444' : '#8a8a9a' }}>{fmtDate(company.planExpiresAt)}</span>
+                <p className="text-xs mt-2" style={{ color: 'var(--c-tx3)' }}>
+                  Vence em: <span style={{ color: isExpired(company.planExpiresAt) ? '#ef4444' : 'var(--c-tx2)' }}>{fmtDate(company.planExpiresAt)}</span>
                 </p>
               </div>
 
@@ -460,17 +460,17 @@ const CompanyPanel = ({ company, plans, onClose, onRefresh }) => {
               {loadingUsers ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="w-7 h-7 border-4 rounded-full animate-spin"
-                    style={{ borderColor: '#3d3d47', borderTopColor: '#f97316' }} />
+                    style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
                 </div>
               ) : users.length === 0 ? (
                 <div className="text-center py-12">
-                  <Users size={32} className="mx-auto mb-3" style={{ color: '#3d3d47' }} />
-                  <p className="text-sm" style={{ color: '#8a8a9a' }}>Nenhum usuário encontrado</p>
+                  <Users size={32} className="mx-auto mb-3" style={{ color: 'var(--c-bd1)' }} />
+                  <p className="text-sm" style={{ color: 'var(--c-tx2)' }}>Nenhum usuário encontrado</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {users.map(u => (
-                    <div key={u._id} className="rounded-2xl p-4" style={{ background: '#242429', border: '1px solid #3d3d47' }}>
+                    <div key={u._id} className="rounded-2xl p-4" style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)' }}>
                       {/* Linha principal */}
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
@@ -479,15 +479,15 @@ const CompanyPanel = ({ company, plans, onClose, onRefresh }) => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-sm font-medium" style={{ color: '#e0e0ec' }}>{u.name}</p>
+                            <p className="text-sm font-medium" style={{ color: 'var(--c-tx0)' }}>{u.name}</p>
                             {!u.isActive && (
                               <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>
                                 Inativo
                               </span>
                             )}
                           </div>
-                          <p className="text-xs truncate" style={{ color: '#5c5c6b' }}>{u.email}</p>
-                          <p className="text-xs" style={{ color: u.role === 'owner' ? '#f97316' : '#8a8a9a' }}>
+                          <p className="text-xs truncate" style={{ color: 'var(--c-tx3)' }}>{u.email}</p>
+                          <p className="text-xs" style={{ color: u.role === 'owner' ? '#f97316' : 'var(--c-tx2)' }}>
                             {u.role === 'owner' ? 'Proprietário' : 'Funcionário'}
                           </p>
                         </div>
@@ -628,15 +628,15 @@ const AdminCompaniesPage = () => {
       {/* Cabeçalho */}
       <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
         <div>
-          <h2 className="text-xl font-bold" style={{ color: '#e0e0ec' }}>Empresas</h2>
-          <p className="text-sm mt-0.5" style={{ color: '#8a8a9a' }}>
+          <h2 className="text-xl font-bold" style={{ color: 'var(--c-tx0)' }}>Empresas</h2>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--c-tx2)' }}>
             {totalCount} empresa{totalCount !== 1 ? 's' : ''} cadastrada{totalCount !== 1 ? 's' : ''}
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
           <button onClick={handleExportCSV}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium"
-            style={{ background: '#1a1a1f', border: '1px solid #2e2e35', color: '#b8b8c8' }}>
+            style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: 'var(--c-tx1)' }}>
             <Download size={15} /> Exportar CSV
           </button>
           <button onClick={() => setShowModal(true)}
@@ -649,23 +649,23 @@ const AdminCompaniesPage = () => {
 
       {/* Busca */}
       <div className="relative mb-3">
-        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#5c5c6b' }} />
+        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--c-tx3)' }} />
         <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
           placeholder="Buscar por nome ou e-mail..."
           className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none"
-          style={{ background: '#1a1a1f', border: '1px solid #2e2e35', color: '#e0e0ec' }} />
+          style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: 'var(--c-tx0)' }} />
       </div>
 
       {/* Filtros */}
       <div className="flex items-center gap-2 flex-wrap mb-5">
         {/* Status */}
-        <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e35' }}>
+        <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--c-bd0)' }}>
           {statusBtns.map(b => (
             <button key={b.value} onClick={() => { setStatusFilter(b.value); setPage(1) }}
               className="px-3 py-2 text-xs font-medium transition-all"
               style={{
-                background: statusFilter === b.value ? 'rgba(249,115,22,0.18)' : '#1a1a1f',
-                color: statusFilter === b.value ? '#f97316' : '#8a8a9a',
+                background: statusFilter === b.value ? 'rgba(249,115,22,0.18)' : 'var(--c-bg1)',
+                color: statusFilter === b.value ? '#f97316' : 'var(--c-tx2)',
               }}>
               {b.label}
             </button>
@@ -675,7 +675,7 @@ const AdminCompaniesPage = () => {
         {/* Plano */}
         <select value={planFilter} onChange={e => { setPlanFilter(e.target.value); setPage(1) }}
           className="px-3 py-2 rounded-xl text-xs outline-none"
-          style={{ background: '#1a1a1f', border: '1px solid #2e2e35', color: planFilter ? '#f97316' : '#8a8a9a' }}>
+          style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: planFilter ? '#f97316' : 'var(--c-tx2)' }}>
           <option value="">Todos os planos</option>
           {plans.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
         </select>
@@ -694,36 +694,36 @@ const AdminCompaniesPage = () => {
       {loading ? (
         <div className="flex items-center justify-center h-48">
           <div className="w-8 h-8 border-4 rounded-full animate-spin"
-            style={{ borderColor: '#3d3d47', borderTopColor: '#f97316' }} />
+            style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
         </div>
       ) : companies.length === 0 ? (
-        <div className="rounded-2xl text-center py-14" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-          <Building2 size={36} className="mx-auto mb-3" style={{ color: '#3d3d47' }} />
-          <p style={{ color: '#8a8a9a' }}>Nenhuma empresa encontrada</p>
+        <div className="rounded-2xl text-center py-14" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+          <Building2 size={36} className="mx-auto mb-3" style={{ color: 'var(--c-bd1)' }} />
+          <p style={{ color: 'var(--c-tx2)' }}>Nenhuma empresa encontrada</p>
         </div>
       ) : (
         <>
           {/* Tabela desktop */}
-          <div className="hidden md:block rounded-2xl overflow-hidden" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
+          <div className="hidden md:block rounded-2xl overflow-hidden" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid #2e2e35' }}>
+                  <tr style={{ borderBottom: '1px solid var(--c-bd0)' }}>
                     {['Empresa', 'Plano', 'Usuários', 'Vence em', 'Status', ''].map((h, i) => (
                       <th key={i} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap"
-                        style={{ color: '#5c5c6b' }}>{h}</th>
+                        style={{ color: 'var(--c-tx3)' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {companies.map(c => (
-                    <tr key={c._id} className="cursor-pointer" style={{ borderBottom: '1px solid #2e2e35' }}
+                    <tr key={c._id} className="cursor-pointer" style={{ borderBottom: '1px solid var(--c-bd0)' }}
                       onClick={() => setSelectedCompany(c)}
-                      onMouseEnter={e => e.currentTarget.style.background = '#242429'}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--c-bg2)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                       <td className="px-4 py-3">
-                        <p className="text-sm font-medium" style={{ color: '#e0e0ec' }}>{c.name}</p>
-                        <p className="text-xs" style={{ color: '#5c5c6b' }}>{c.email}</p>
+                        <p className="text-sm font-medium" style={{ color: 'var(--c-tx0)' }}>{c.name}</p>
+                        <p className="text-xs" style={{ color: 'var(--c-tx3)' }}>{c.email}</p>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span className="text-xs px-2 py-1 rounded-full"
@@ -731,11 +731,11 @@ const AdminCompaniesPage = () => {
                           {c.plan?.name ?? '—'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ color: '#b8b8c8' }}>
+                      <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ color: 'var(--c-tx1)' }}>
                         {c.userCount} / {c.plan?.maxUsers === -1 ? '∞' : c.plan?.maxUsers}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="text-xs" style={{ color: isExpired(c.planExpiresAt) ? '#ef4444' : '#8a8a9a' }}>
+                        <span className="text-xs" style={{ color: isExpired(c.planExpiresAt) ? '#ef4444' : 'var(--c-tx2)' }}>
                           {fmtDate(c.planExpiresAt)}{isExpired(c.planExpiresAt) && ' ⚠'}
                         </span>
                       </td>
@@ -747,7 +747,7 @@ const AdminCompaniesPage = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <Arrow size={15} style={{ color: '#5c5c6b' }} />
+                        <Arrow size={15} style={{ color: 'var(--c-tx3)' }} />
                       </td>
                     </tr>
                   ))}
@@ -760,12 +760,12 @@ const AdminCompaniesPage = () => {
           <div className="md:hidden space-y-3">
             {companies.map(c => (
               <div key={c._id} className="rounded-xl p-4 cursor-pointer"
-                style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}
+                style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}
                 onClick={() => setSelectedCompany(c)}>
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold truncate" style={{ color: '#e0e0ec' }}>{c.name}</p>
-                    <p className="text-xs truncate" style={{ color: '#5c5c6b' }}>{c.email}</p>
+                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--c-tx0)' }}>{c.name}</p>
+                    <p className="text-xs truncate" style={{ color: 'var(--c-tx3)' }}>{c.email}</p>
                   </div>
                   <span className="text-xs px-2 py-1 rounded-full flex-shrink-0"
                     style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316' }}>
@@ -778,11 +778,11 @@ const AdminCompaniesPage = () => {
                       {c.isActive ? <CheckCircle size={12} /> : <XCircle size={12} />}
                       {c.isActive ? 'Ativa' : 'Inativa'}
                     </span>
-                    <span className="text-xs" style={{ color: isExpired(c.planExpiresAt) ? '#ef4444' : '#8a8a9a' }}>
+                    <span className="text-xs" style={{ color: isExpired(c.planExpiresAt) ? '#ef4444' : 'var(--c-tx2)' }}>
                       Vence {fmtDate(c.planExpiresAt)}
                     </span>
                   </div>
-                  <Arrow size={15} style={{ color: '#5c5c6b' }} />
+                  <Arrow size={15} style={{ color: 'var(--c-tx3)' }} />
                 </div>
               </div>
             ))}
@@ -794,12 +794,12 @@ const AdminCompaniesPage = () => {
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-3 mt-4">
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-            className="p-2 rounded-lg" style={{ background: '#1a1a1f', color: page === 1 ? '#3d3d47' : '#e0e0ec' }}>
+            className="p-2 rounded-lg" style={{ background: 'var(--c-bg1)', color: page === 1 ? 'var(--c-bd1)' : 'var(--c-tx0)' }}>
             <ChevronLeft size={16} />
           </button>
-          <span className="text-sm" style={{ color: '#8a8a9a' }}>Página {page} de {totalPages}</span>
+          <span className="text-sm" style={{ color: 'var(--c-tx2)' }}>Página {page} de {totalPages}</span>
           <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-            className="p-2 rounded-lg" style={{ background: '#1a1a1f', color: page === totalPages ? '#3d3d47' : '#e0e0ec' }}>
+            className="p-2 rounded-lg" style={{ background: 'var(--c-bg1)', color: page === totalPages ? 'var(--c-bd1)' : 'var(--c-tx0)' }}>
             <ChevronRight size={16} />
           </button>
         </div>

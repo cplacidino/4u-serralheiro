@@ -32,6 +32,32 @@
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+/* ─── Tema escuro (padrão) ─── */
+:root {
+  --c-bg0: #111114;
+  --c-bg1: #1a1a1f;
+  --c-bg2: #242429;
+  --c-bd0: #2e2e35;
+  --c-bd1: #3d3d47;
+  --c-tx0: #e0e0ec;
+  --c-tx1: #b8b8c8;
+  --c-tx2: #8a8a9a;
+  --c-tx3: #5c5c6b;
+}
+
+/* ─── Tema claro ─── */
+[data-theme="light"] {
+  --c-bg0: #f2f2f7;
+  --c-bg1: #ffffff;
+  --c-bg2: #f8f8fc;
+  --c-bd0: #e4e4ec;
+  --c-bd1: #d0d0dc;
+  --c-tx0: #1a1a2e;
+  --c-tx1: #3a3a50;
+  --c-tx2: #6a6a80;
+  --c-tx3: #9a9ab0;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -39,10 +65,11 @@
 }
 
 body {
-  background-color: #111114;
-  color: #e0e0ec;
+  background-color: var(--c-bg0);
+  color: var(--c-tx0);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 #root {
@@ -52,6 +79,6 @@ body {
 
 /* Scrollbar personalizada com visual industrial */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #1a1a1f; }
-::-webkit-scrollbar-thumb { background: #3d3d47; border-radius: 3px; }
+::-webkit-scrollbar-track { background: var(--c-bg1); }
+::-webkit-scrollbar-thumb { background: var(--c-bd1); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #f97316; }

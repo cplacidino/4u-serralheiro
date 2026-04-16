@@ -6,9 +6,9 @@ import { useAuth } from '../../contexts/AuthContext'
 import api from '../../services/api'
 
 const inputCls = (err) => ({
-  background: '#242429',
-  border: `1px solid ${err ? '#ef4444' : '#3d3d47'}`,
-  color: '#e0e0ec',
+  background: 'var(--c-bg2)',
+  border: `1px solid ${err ? '#ef4444' : 'var(--c-bd1)'}`,
+  color: 'var(--c-tx0)',
   borderRadius: 10,
   padding: '10px 14px',
   fontSize: 14,
@@ -18,7 +18,7 @@ const inputCls = (err) => ({
 
 const Field = ({ label, error, children }) => (
   <div>
-    <label className="block text-sm font-medium mb-1.5" style={{ color: '#b8b8c8' }}>{label}</label>
+    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>{label}</label>
     {children}
     {error && <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{error}</p>}
   </div>
@@ -62,12 +62,12 @@ const UserModal = ({ user, onClose, onSaved }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
-      <div className="w-full max-w-md rounded-2xl" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-        <div className="flex items-center justify-between p-6" style={{ borderBottom: '1px solid #2e2e35' }}>
-          <h2 className="text-lg font-bold" style={{ color: '#e0e0ec' }}>
+      <div className="w-full max-w-md rounded-2xl" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+        <div className="flex items-center justify-between p-6" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+          <h2 className="text-lg font-bold" style={{ color: 'var(--c-tx0)' }}>
             {isEdit ? 'Editar Funcionário' : 'Novo Funcionário'}
           </h2>
-          <button onClick={onClose} className="p-2 rounded-xl" style={{ color: '#5c5c6b', background: '#242429' }}>
+          <button onClick={onClose} className="p-2 rounded-xl" style={{ color: 'var(--c-tx3)', background: 'var(--c-bg2)' }}>
             <X size={18} />
           </button>
         </div>
@@ -94,9 +94,9 @@ const UserModal = ({ user, onClose, onSaved }) => {
           )}
         </div>
 
-        <div className="flex gap-3 p-6" style={{ borderTop: '1px solid #2e2e35' }}>
+        <div className="flex gap-3 p-6" style={{ borderTop: '1px solid var(--c-bd0)' }}>
           <button onClick={onClose} className="flex-1 py-3 rounded-xl text-sm font-medium"
-            style={{ background: '#242429', color: '#b8b8c8' }}>
+            style={{ background: 'var(--c-bg2)', color: 'var(--c-tx1)' }}>
             Cancelar
           </button>
           <button onClick={handleSave} disabled={saving}
@@ -164,8 +164,8 @@ const UsuariosPage = () => {
       {/* Cabeçalho */}
       <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: '#e0e0ec' }}>Usuários</h1>
-          <p className="text-base mt-1" style={{ color: '#8a8a9a' }}>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--c-tx0)' }}>Usuários</h1>
+          <p className="text-base mt-1" style={{ color: 'var(--c-tx2)' }}>
             Gerencie quem acessa o sistema
             <span className="ml-2 px-2 py-0.5 rounded-full text-sm font-semibold"
               style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316' }}>
@@ -191,7 +191,7 @@ const UsuariosPage = () => {
       {loading ? (
         <div className="flex items-center justify-center h-56">
           <div className="w-10 h-10 border-4 rounded-full animate-spin"
-            style={{ borderColor: '#3d3d47', borderTopColor: '#f97316' }} />
+            style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
         </div>
       ) : (
         <div className="space-y-4">
@@ -201,7 +201,7 @@ const UsuariosPage = () => {
 
             return (
               <div key={u._id} className="rounded-2xl p-6 flex items-center gap-5"
-                style={{ background: '#1a1a1f', border: `1px solid ${isMe ? 'rgba(249,115,22,0.4)' : '#2e2e35'}` }}>
+                style={{ background: 'var(--c-bg1)', border: `1px solid ${isMe ? 'rgba(249,115,22,0.4)' : 'var(--c-bd0)'}` }}>
 
                 {/* Avatar */}
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold flex-shrink-0"
@@ -212,7 +212,7 @@ const UsuariosPage = () => {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-base font-bold" style={{ color: '#e0e0ec' }}>{u.name}</p>
+                    <p className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>{u.name}</p>
                     {isOwner && (
                       <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold"
                         style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316' }}>
@@ -231,7 +231,7 @@ const UsuariosPage = () => {
                       {u.isActive ? 'Ativo' : 'Inativo'}
                     </span>
                   </div>
-                  <p className="text-sm mt-0.5" style={{ color: '#5c5c6b' }}>{u.email}</p>
+                  <p className="text-sm mt-0.5" style={{ color: 'var(--c-tx3)' }}>{u.email}</p>
                   {u.activeSessions > 0 && (
                     <p className="text-xs mt-1" style={{ color: '#eab308' }}>
                       {u.activeSessions} sessão(ões) ativa(s)
@@ -245,7 +245,7 @@ const UsuariosPage = () => {
                     <>
                       <button onClick={() => setEditUser(u)}
                         className="p-2.5 rounded-xl" title="Editar"
-                        style={{ background: '#242429', color: '#8a8a9a' }}>
+                        style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }}>
                         <Pencil size={16} />
                       </button>
                       <button onClick={() => toggleActive(u)}
@@ -268,7 +268,7 @@ const UsuariosPage = () => {
                   {isOwner && !isMe && (
                     <button onClick={() => setEditUser(u)}
                       className="p-2.5 rounded-xl" title="Editar"
-                      style={{ background: '#242429', color: '#8a8a9a' }}>
+                      style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }}>
                       <Pencil size={16} />
                     </button>
                   )}

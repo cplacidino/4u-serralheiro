@@ -5,9 +5,9 @@ import toast from 'react-hot-toast'
 import api from '../../services/api'
 
 const inp = (err) => ({
-  background: '#242429',
-  border: `1px solid ${err ? '#ef4444' : '#3d3d47'}`,
-  color: '#e0e0ec',
+  background: 'var(--c-bg2)',
+  border: `1px solid ${err ? '#ef4444' : 'var(--c-bd1)'}`,
+  color: 'var(--c-tx0)',
   borderRadius: 10,
   padding: '10px 14px',
   fontSize: 14,
@@ -17,7 +17,7 @@ const inp = (err) => ({
 
 const Field = ({ label, error, children }) => (
   <div>
-    <label className="block text-sm font-medium mb-1.5" style={{ color: '#b8b8c8' }}>{label}</label>
+    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>{label}</label>
     {children}
     {error && <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{error}</p>}
   </div>
@@ -30,8 +30,8 @@ const SectionTitle = ({ icon: Icon, title, subtitle }) => (
       <Icon size={20} style={{ color: '#f97316' }} />
     </div>
     <div>
-      <h2 className="text-base font-bold" style={{ color: '#e0e0ec' }}>{title}</h2>
-      {subtitle && <p className="text-xs mt-0.5" style={{ color: '#5c5c6b' }}>{subtitle}</p>}
+      <h2 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>{title}</h2>
+      {subtitle && <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>{subtitle}</p>}
     </div>
   </div>
 )
@@ -85,7 +85,7 @@ const CompanySection = () => {
   if (!company) return (
     <div className="flex justify-center py-10">
       <div className="w-7 h-7 border-4 rounded-full animate-spin"
-        style={{ borderColor: '#3d3d47', borderTopColor: '#f97316' }} />
+        style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
     </div>
   )
 
@@ -107,7 +107,7 @@ const CompanySection = () => {
         </Field>
       </div>
 
-      <p className="text-xs font-semibold uppercase tracking-wider pt-2" style={{ color: '#5c5c6b' }}>
+      <p className="text-xs font-semibold uppercase tracking-wider pt-2" style={{ color: 'var(--c-tx3)' }}>
         Endereço
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -157,17 +157,17 @@ const CompanySection = () => {
 
       {/* Plano ativo */}
       {company.plan && (
-        <div className="rounded-xl p-4 mt-2" style={{ background: '#242429', border: '1px solid #2e2e35' }}>
-          <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#5c5c6b' }}>Plano Ativo</p>
+        <div className="rounded-xl p-4 mt-2" style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd0)' }}>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--c-tx3)' }}>Plano Ativo</p>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-base font-bold" style={{ color: '#f97316' }}>{company.plan.name}</p>
-              <p className="text-xs mt-0.5" style={{ color: '#8a8a9a' }}>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx2)' }}>
                 {company.plan.maxUsers === -1 ? 'Usuários ilimitados' : `Até ${company.plan.maxUsers} usuário(s)`}
                 {' · '}Expira em {new Date(company.planExpiresAt).toLocaleDateString('pt-BR')}
               </p>
             </div>
-            <p className="text-lg font-bold" style={{ color: '#e0e0ec' }}>
+            <p className="text-lg font-bold" style={{ color: 'var(--c-tx0)' }}>
               {(company.plan.price ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}/mês
             </p>
           </div>
@@ -298,8 +298,8 @@ const ConfiguracoesPage = () => {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold" style={{ color: '#e0e0ec' }}>Configurações</h1>
-        <p className="text-base mt-1" style={{ color: '#8a8a9a' }}>Gerencie os dados da empresa e do seu perfil</p>
+        <h1 className="text-3xl font-bold" style={{ color: 'var(--c-tx0)' }}>Configurações</h1>
+        <p className="text-base mt-1" style={{ color: 'var(--c-tx2)' }}>Gerencie os dados da empresa e do seu perfil</p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
@@ -310,9 +310,9 @@ const ConfiguracoesPage = () => {
               <button key={id} onClick={() => setTab(id)}
                 className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all"
                 style={{
-                  background: tab === id ? 'rgba(249,115,22,0.12)' : '#1a1a1f',
-                  color: tab === id ? '#f97316' : '#8a8a9a',
-                  border: `1px solid ${tab === id ? 'rgba(249,115,22,0.3)' : '#2e2e35'}`,
+                  background: tab === id ? 'rgba(249,115,22,0.12)' : 'var(--c-bg1)',
+                  color: tab === id ? '#f97316' : 'var(--c-tx2)',
+                  border: `1px solid ${tab === id ? 'rgba(249,115,22,0.3)' : 'var(--c-bd0)'}`,
                 }}>
                 <div className="flex items-center gap-3">
                   <Icon size={16} />
@@ -325,7 +325,7 @@ const ConfiguracoesPage = () => {
         </aside>
 
         {/* Conteúdo */}
-        <div className="flex-1 rounded-2xl p-6" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
+        <div className="flex-1 rounded-2xl p-6" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
           {tab === 'empresa' && (
             <>
               <SectionTitle icon={Building2} title="Dados da Empresa"

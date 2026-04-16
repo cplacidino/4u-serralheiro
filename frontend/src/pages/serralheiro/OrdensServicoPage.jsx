@@ -20,14 +20,14 @@ const fmt = (v) => (v ?? 0).toLocaleString('pt-BR', { style: 'currency', currenc
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('pt-BR') : '—'
 
 const inp = (err) => ({
-  background: '#242429',
-  border: `1px solid ${err ? '#ef4444' : '#3d3d47'}`,
-  color: '#e0e0ec', borderRadius: 10, padding: '9px 12px', fontSize: 13, width: '100%', outline: 'none',
+  background: 'var(--c-bg2)',
+  border: `1px solid ${err ? '#ef4444' : 'var(--c-bd1)'}`,
+  color: 'var(--c-tx0)', borderRadius: 10, padding: '9px 12px', fontSize: 13, width: '100%', outline: 'none',
 })
 
 const Field = ({ label, error, children }) => (
   <div>
-    <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>{label}</label>
+    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>{label}</label>
     {children}
     {error && <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{error}</p>}
   </div>
@@ -91,12 +91,12 @@ const OSModal = ({ os, onClose, onSaved }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto"
       style={{ background: 'rgba(0,0,0,0.75)' }}>
-      <div className="w-full max-w-lg rounded-2xl my-4" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-        <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid #2e2e35' }}>
-          <h2 className="text-base font-bold" style={{ color: '#e0e0ec' }}>
+      <div className="w-full max-w-lg rounded-2xl my-4" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+        <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+          <h2 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>
             {isEdit ? 'Editar OS' : 'Nova Ordem de Serviço'}
           </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg" style={{ color: '#5c5c6b', background: '#242429' }}>
+          <button onClick={onClose} className="p-1.5 rounded-lg" style={{ color: 'var(--c-tx3)', background: 'var(--c-bg2)' }}>
             <X size={16} />
           </button>
         </div>
@@ -152,7 +152,7 @@ const OSModal = ({ os, onClose, onSaved }) => {
 
           <div className="flex gap-3 pt-1">
             <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm"
-              style={{ background: '#2e2e35', color: '#b8b8c8' }}>Cancelar</button>
+              style={{ background: 'var(--c-bd0)', color: 'var(--c-tx1)' }}>Cancelar</button>
             <button onClick={handleSave} disabled={saving}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
               style={{ background: 'linear-gradient(135deg,#f97316,#ea6c10)', color: 'white', opacity: saving ? 0.7 : 1 }}>
@@ -307,23 +307,23 @@ const OSPanel = ({ osId, onClose, onUpdated, isOwner }) => {
     <div className="fixed inset-0 z-40 flex justify-end" style={{ background: 'rgba(0,0,0,0.5)' }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="h-full w-full max-w-md flex flex-col overflow-hidden"
-        style={{ background: '#1a1a1f', borderLeft: '1px solid #2e2e35' }}>
+        style={{ background: 'var(--c-bg1)', borderLeft: '1px solid var(--c-bd0)' }}>
 
         {/* Header do painel */}
         <div className="flex items-center justify-between px-5 py-4 flex-shrink-0"
-          style={{ borderBottom: '1px solid #2e2e35' }}>
-          <h2 className="text-base font-bold" style={{ color: '#e0e0ec' }}>
+          style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+          <h2 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>
             {os ? `OS-${String(os.number).padStart(3, '0')}` : 'Carregando...'}
           </h2>
           <div className="flex items-center gap-2">
             {os && (
               <>
                 <button onClick={handlePrint} className="p-2 rounded-xl" title="Imprimir"
-                  style={{ background: '#242429', color: '#8a8a9a' }}>
+                  style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }}>
                   <Printer size={16} />
                 </button>
                 <button onClick={() => setShowEdit(true)} className="p-2 rounded-xl" title="Editar"
-                  style={{ background: '#242429', color: '#8a8a9a' }}>
+                  style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }}>
                   <Pencil size={16} />
                 </button>
                 {isOwner && os.status === 'pendente' && (
@@ -335,7 +335,7 @@ const OSPanel = ({ osId, onClose, onUpdated, isOwner }) => {
               </>
             )}
             <button onClick={onClose} className="p-2 rounded-xl"
-              style={{ background: '#242429', color: '#5c5c6b' }}>
+              style={{ background: 'var(--c-bg2)', color: 'var(--c-tx3)' }}>
               <X size={16} />
             </button>
           </div>
@@ -344,14 +344,14 @@ const OSPanel = ({ osId, onClose, onUpdated, isOwner }) => {
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="w-8 h-8 border-4 rounded-full animate-spin"
-              style={{ borderColor: '#3d3d47', borderTopColor: '#f97316' }} />
+              style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
           </div>
         ) : !os ? null : (
           <div className="flex-1 overflow-y-auto p-5 space-y-5">
 
             {/* Status + botões de progressão */}
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#5c5c6b' }}>Status</p>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--c-tx3)' }}>Status</p>
               <StatusBadge status={os.status} />
               {os.status !== 'concluido' && os.status !== 'cancelado' && (
                 <div className="flex gap-2 mt-3 flex-wrap">
@@ -379,48 +379,48 @@ const OSPanel = ({ osId, onClose, onUpdated, isOwner }) => {
                 </div>
               )}
               {os.completedAt && (
-                <p className="text-xs mt-2" style={{ color: '#5c5c6b' }}>
+                <p className="text-xs mt-2" style={{ color: 'var(--c-tx3)' }}>
                   Concluído em {fmtDate(os.completedAt)}
                 </p>
               )}
             </div>
 
             {/* Informações principais */}
-            <div className="rounded-xl p-4 space-y-3" style={{ background: '#111114', border: '1px solid #2e2e35' }}>
+            <div className="rounded-xl p-4 space-y-3" style={{ background: 'var(--c-bg0)', border: '1px solid var(--c-bd0)' }}>
               <div>
-                <p className="text-xs" style={{ color: '#5c5c6b' }}>Título</p>
-                <p className="text-sm font-semibold mt-0.5" style={{ color: '#e0e0ec' }}>{os.title}</p>
+                <p className="text-xs" style={{ color: 'var(--c-tx3)' }}>Título</p>
+                <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--c-tx0)' }}>{os.title}</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-xs" style={{ color: '#5c5c6b' }}>Cliente</p>
-                  <p className="text-sm font-medium mt-0.5" style={{ color: '#e0e0ec' }}>{os.client?.name}</p>
+                  <p className="text-xs" style={{ color: 'var(--c-tx3)' }}>Cliente</p>
+                  <p className="text-sm font-medium mt-0.5" style={{ color: 'var(--c-tx0)' }}>{os.client?.name}</p>
                   {os.client?.phone && (
-                    <p className="text-xs mt-0.5" style={{ color: '#8a8a9a' }}>{os.client.phone}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx2)' }}>{os.client.phone}</p>
                   )}
                 </div>
                 <div>
-                  <p className="text-xs" style={{ color: '#5c5c6b' }}>Orçamento</p>
+                  <p className="text-xs" style={{ color: 'var(--c-tx3)' }}>Orçamento</p>
                   <p className="text-sm font-medium mt-0.5" style={{ color: '#f97316' }}>
                     ORC-{String(os.budget?.number ?? 0).padStart(3, '0')}
                   </p>
                   {os.budget?.total && (
-                    <p className="text-xs mt-0.5" style={{ color: '#8a8a9a' }}>{fmt(os.budget.total)}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx2)' }}>{fmt(os.budget.total)}</p>
                   )}
                 </div>
                 <div>
-                  <p className="text-xs" style={{ color: '#5c5c6b' }}>Responsável</p>
-                  <p className="text-sm font-medium mt-0.5" style={{ color: '#e0e0ec' }}>
-                    {os.assignedTo ? os.assignedTo.name : <span style={{ color: '#5c5c6b' }}>Não definido</span>}
+                  <p className="text-xs" style={{ color: 'var(--c-tx3)' }}>Responsável</p>
+                  <p className="text-sm font-medium mt-0.5" style={{ color: 'var(--c-tx0)' }}>
+                    {os.assignedTo ? os.assignedTo.name : <span style={{ color: 'var(--c-tx3)' }}>Não definido</span>}
                   </p>
                   {os.assignedTo?.cargo && (
-                    <p className="text-xs mt-0.5" style={{ color: '#8a8a9a' }}>{os.assignedTo.cargo}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx2)' }}>{os.assignedTo.cargo}</p>
                   )}
                 </div>
                 <div>
-                  <p className="text-xs" style={{ color: '#5c5c6b' }}>Prazo</p>
+                  <p className="text-xs" style={{ color: 'var(--c-tx3)' }}>Prazo</p>
                   <p className="text-sm font-medium mt-0.5"
-                    style={{ color: os.dueDate && new Date(os.dueDate) < new Date() && os.status !== 'concluido' ? '#ef4444' : '#e0e0ec' }}>
+                    style={{ color: os.dueDate && new Date(os.dueDate) < new Date() && os.status !== 'concluido' ? '#ef4444' : 'var(--c-tx0)' }}>
                     {fmtDate(os.dueDate)}
                   </p>
                 </div>
@@ -429,8 +429,8 @@ const OSPanel = ({ osId, onClose, onUpdated, isOwner }) => {
 
             {os.description && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#5c5c6b' }}>Descrição</p>
-                <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#b8b8c8' }}>
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--c-tx3)' }}>Descrição</p>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--c-tx1)' }}>
                   {os.description}
                 </p>
               </div>
@@ -438,15 +438,15 @@ const OSPanel = ({ osId, onClose, onUpdated, isOwner }) => {
 
             {os.notes && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#5c5c6b' }}>Observações</p>
-                <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#8a8a9a' }}>
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--c-tx3)' }}>Observações</p>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--c-tx2)' }}>
                   {os.notes}
                 </p>
               </div>
             )}
 
             <div>
-              <p className="text-xs" style={{ color: '#5c5c6b' }}>
+              <p className="text-xs" style={{ color: 'var(--c-tx3)' }}>
                 Criado em {fmtDate(os.createdAt)} por {os.createdBy?.name ?? '—'}
               </p>
             </div>
@@ -512,8 +512,8 @@ const OrdensServicoPage = () => {
       {/* Cabeçalho */}
       <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: '#e0e0ec' }}>Ordens de Serviço</h1>
-          <p className="text-base mt-1" style={{ color: '#8a8a9a' }}>Acompanhe a execução dos serviços</p>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--c-tx0)' }}>Ordens de Serviço</h1>
+          <p className="text-base mt-1" style={{ color: 'var(--c-tx2)' }}>Acompanhe a execução dos serviços</p>
         </div>
         <button onClick={() => setShowCreate(true)}
           className="flex items-center gap-2 px-5 py-3 rounded-2xl text-base font-semibold"
@@ -527,14 +527,14 @@ const OrdensServicoPage = () => {
         {kpis.map(k => {
           const Icon = k.icon
           return (
-            <div key={k.label} className="rounded-2xl p-4" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
+            <div key={k.label} className="rounded-2xl p-4" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-medium" style={{ color: '#8a8a9a' }}>{k.label}</p>
+                <p className="text-xs font-medium" style={{ color: 'var(--c-tx2)' }}>{k.label}</p>
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: `${k.color}22` }}>
                   <Icon size={16} style={{ color: k.color }} />
                 </div>
               </div>
-              <p className="text-3xl font-bold" style={{ color: '#e0e0ec' }}>{k.value}</p>
+              <p className="text-3xl font-bold" style={{ color: 'var(--c-tx0)' }}>{k.value}</p>
             </div>
           )
         })}
@@ -543,16 +543,16 @@ const OrdensServicoPage = () => {
       {/* Filtros */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="flex items-center gap-3 px-4 py-3 rounded-2xl flex-1"
-          style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-          <Search size={16} style={{ color: '#5c5c6b', flexShrink: 0 }} />
+          style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+          <Search size={16} style={{ color: 'var(--c-tx3)', flexShrink: 0 }} />
           <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
             placeholder="Buscar por título, cliente ou número..."
             className="flex-1 bg-transparent outline-none text-base"
-            style={{ color: '#e0e0ec' }} />
+            style={{ color: 'var(--c-tx0)' }} />
         </div>
         <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
           className="py-3 px-4 rounded-2xl text-sm outline-none"
-          style={{ background: '#1a1a1f', border: '1px solid #2e2e35', color: '#e0e0ec', minWidth: 160 }}>
+          style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: 'var(--c-tx0)', minWidth: 160 }}>
           <option value="">Todos os status</option>
           {Object.entries(STATUS).map(([k, v]) => (
             <option key={k} value={k}>{v.label}</option>
@@ -564,13 +564,13 @@ const OrdensServicoPage = () => {
       {loading ? (
         <div className="flex items-center justify-center h-56">
           <div className="w-10 h-10 border-4 rounded-full animate-spin"
-            style={{ borderColor: '#3d3d47', borderTopColor: '#f97316' }} />
+            style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
         </div>
       ) : osList.length === 0 ? (
-        <div className="rounded-2xl text-center py-16" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-          <ClipboardList size={40} className="mx-auto mb-3" style={{ color: '#2e2e35' }} />
-          <p className="text-base font-medium" style={{ color: '#8a8a9a' }}>Nenhuma OS encontrada</p>
-          <p className="text-sm mt-1" style={{ color: '#5c5c6b' }}>Crie uma OS a partir de um orçamento aprovado</p>
+        <div className="rounded-2xl text-center py-16" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+          <ClipboardList size={40} className="mx-auto mb-3" style={{ color: 'var(--c-bd0)' }} />
+          <p className="text-base font-medium" style={{ color: 'var(--c-tx2)' }}>Nenhuma OS encontrada</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--c-tx3)' }}>Crie uma OS a partir de um orçamento aprovado</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -580,9 +580,9 @@ const OrdensServicoPage = () => {
             return (
               <button key={os._id} onClick={() => setSelectedId(os._id)}
                 className="w-full rounded-xl p-4 flex items-center gap-4 text-left transition-colors"
-                style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = '#3d3d47'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = '#2e2e35'}>
+                style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--c-bd1)'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--c-bd0)'}>
 
                 {/* Número */}
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-bold"
@@ -592,14 +592,14 @@ const OrdensServicoPage = () => {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: '#e0e0ec' }}>{os.title}</p>
+                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--c-tx0)' }}>{os.title}</p>
                   <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                    <span className="text-xs" style={{ color: '#8a8a9a' }}>{os.client?.name}</span>
-                    <span className="text-xs" style={{ color: '#5c5c6b' }}>
+                    <span className="text-xs" style={{ color: 'var(--c-tx2)' }}>{os.client?.name}</span>
+                    <span className="text-xs" style={{ color: 'var(--c-tx3)' }}>
                       ORC-{String(os.budget?.number ?? 0).padStart(3, '0')}
                     </span>
                     {os.assignedTo && (
-                      <span className="flex items-center gap-1 text-xs" style={{ color: '#5c5c6b' }}>
+                      <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--c-tx3)' }}>
                         <User size={10} /> {os.assignedTo.name}
                       </span>
                     )}
@@ -610,13 +610,13 @@ const OrdensServicoPage = () => {
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   <StatusBadge status={os.status} />
                   {os.dueDate && (
-                    <span className="text-xs" style={{ color: vencida ? '#ef4444' : '#5c5c6b' }}>
+                    <span className="text-xs" style={{ color: vencida ? '#ef4444' : 'var(--c-tx3)' }}>
                       {vencida ? 'Vencida · ' : 'Prazo · '}{fmtDate(os.dueDate)}
                     </span>
                   )}
                 </div>
 
-                <ChevronRight size={16} style={{ color: '#3d3d47', flexShrink: 0 }} />
+                <ChevronRight size={16} style={{ color: 'var(--c-bd1)', flexShrink: 0 }} />
               </button>
             )
           })}
@@ -629,7 +629,7 @@ const OrdensServicoPage = () => {
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
             <button key={p} onClick={() => setPage(p)}
               className="w-8 h-8 rounded-lg text-sm"
-              style={{ background: p === page ? '#f97316' : '#1a1a1f', color: p === page ? 'white' : '#8a8a9a' }}>
+              style={{ background: p === page ? '#f97316' : 'var(--c-bg1)', color: p === page ? 'white' : 'var(--c-tx2)' }}>
               {p}
             </button>
           ))}

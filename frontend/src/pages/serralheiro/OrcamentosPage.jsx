@@ -39,9 +39,9 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString('pt-BR') : '—'
 
 // ─── Estilos reutilizáveis ─────────────────────────────────────────────────────
 const inputCls = (err) => ({
-  background: '#242429',
-  border: `1px solid ${err ? '#ef4444' : '#3d3d47'}`,
-  color: '#e0e0ec',
+  background: 'var(--c-bg2)',
+  border: `1px solid ${err ? '#ef4444' : 'var(--c-bd1)'}`,
+  color: 'var(--c-tx0)',
   borderRadius: 10,
   padding: '10px 14px',
   fontSize: 14,
@@ -51,7 +51,7 @@ const inputCls = (err) => ({
 
 const Field = ({ label, error, children }) => (
   <div>
-    <label className="block text-sm font-medium mb-1.5" style={{ color: '#b8b8c8' }}>{label}</label>
+    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>{label}</label>
     {children}
     {error && <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{error}</p>}
   </div>
@@ -98,28 +98,28 @@ const PaymentForm = ({ budget, onClose, onSaved }) => {
   }
 
   return (
-    <div className="rounded-xl p-4 space-y-3" style={{ background: '#111114', border: '1px solid #3d3d47' }}>
+    <div className="rounded-xl p-4 space-y-3" style={{ background: 'var(--c-bg0)', border: '1px solid var(--c-bd1)' }}>
       <p className="text-sm font-semibold" style={{ color: '#f97316' }}>Registrar Pagamento</p>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>Forma</label>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Forma</label>
           <select value={method} onChange={e => setMethod(e.target.value)} style={inputCls(false)}>
             {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>Valor (R$)</label>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Valor (R$)</label>
           <input type="number" step="0.01" value={amount}
             onChange={e => setAmount(e.target.value)} style={inputCls(false)} placeholder="0,00" />
         </div>
         {method === 'fiado' && (
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>Vencimento</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Vencimento</label>
             <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={inputCls(false)} />
           </div>
         )}
         <div className={method === 'fiado' ? '' : 'col-span-2'}>
-          <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>Observação</label>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Observação</label>
           <input value={note} onChange={e => setNote(e.target.value)}
             placeholder="Opcional" style={inputCls(false)} />
         </div>
@@ -127,7 +127,7 @@ const PaymentForm = ({ budget, onClose, onSaved }) => {
       {error && <p className="text-xs" style={{ color: '#ef4444' }}>{error}</p>}
       <div className="flex gap-2">
         <button onClick={onClose} className="flex-1 py-2 rounded-xl text-sm"
-          style={{ background: '#242429', color: '#b8b8c8' }}>Cancelar</button>
+          style={{ background: 'var(--c-bg2)', color: 'var(--c-tx1)' }}>Cancelar</button>
         <button onClick={handleSave} disabled={saving}
           className="flex-1 py-2 rounded-xl text-sm font-semibold"
           style={{ background: 'linear-gradient(135deg,#f97316,#ea6c10)', color: 'white', opacity: saving ? 0.7 : 1 }}>
@@ -343,17 +343,17 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
-      <div className="w-full max-w-3xl rounded-2xl flex flex-col" style={{ background: '#1a1a1f', border: '1px solid #2e2e35', maxHeight: '90vh' }}>
+      <div className="w-full max-w-3xl rounded-2xl flex flex-col" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', maxHeight: '90vh' }}>
 
         {/* Cabeçalho */}
-        <div className="flex items-center justify-between p-6" style={{ borderBottom: '1px solid #2e2e35' }}>
+        <div className="flex items-center justify-between p-6" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
           <div>
-            <h2 className="text-lg font-bold" style={{ color: '#e0e0ec' }}>
+            <h2 className="text-lg font-bold" style={{ color: 'var(--c-tx0)' }}>
               ORC-{String(budget.number).padStart(3, '0')}
             </h2>
             <div className="flex items-center gap-3 mt-1">
               <StatusBadge status={budget.status} />
-              <span className="text-sm" style={{ color: '#5c5c6b' }}>
+              <span className="text-sm" style={{ color: 'var(--c-tx3)' }}>
                 {fmtDate(budget.createdAt)}
                 {budget.validUntil && ` · Válido até ${fmtDate(budget.validUntil)}`}
               </span>
@@ -362,7 +362,7 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
           <div className="flex items-center gap-2">
             <button onClick={handlePrint}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium"
-              style={{ background: '#242429', color: '#b8b8c8' }}>
+              style={{ background: 'var(--c-bg2)', color: 'var(--c-tx1)' }}>
               <Printer size={16} /> PDF
             </button>
             {budget.client?.phone && (
@@ -396,7 +396,7 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
             )}
             <button onClick={() => onDuplicate(budget._id)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium"
-              style={{ background: '#242429', color: '#b8b8c8' }}
+              style={{ background: 'var(--c-bg2)', color: 'var(--c-tx1)' }}
               title="Duplicar orçamento">
               <Copy size={16} /> Duplicar
             </button>
@@ -407,7 +407,7 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
                 <Pencil size={16} /> Editar
               </button>
             )}
-            <button onClick={onClose} className="p-2 rounded-xl" style={{ color: '#5c5c6b', background: '#242429' }}>
+            <button onClick={onClose} className="p-2 rounded-xl" style={{ color: 'var(--c-tx3)', background: 'var(--c-bg2)' }}>
               <X size={18} />
             </button>
           </div>
@@ -417,33 +417,33 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
         <div className="overflow-y-auto p-6 space-y-5">
 
           {/* Cliente */}
-          <div className="rounded-xl p-4" style={{ background: '#242429' }}>
-            <p className="text-xs font-semibold uppercase mb-2" style={{ color: '#5c5c6b' }}>Cliente</p>
-            <p className="text-base font-semibold" style={{ color: '#e0e0ec' }}>{budget.client?.name}</p>
-            {budget.client?.phone && <p className="text-sm mt-0.5" style={{ color: '#8a8a9a' }}>{budget.client.phone}</p>}
+          <div className="rounded-xl p-4" style={{ background: 'var(--c-bg2)' }}>
+            <p className="text-xs font-semibold uppercase mb-2" style={{ color: 'var(--c-tx3)' }}>Cliente</p>
+            <p className="text-base font-semibold" style={{ color: 'var(--c-tx0)' }}>{budget.client?.name}</p>
+            {budget.client?.phone && <p className="text-sm mt-0.5" style={{ color: 'var(--c-tx2)' }}>{budget.client.phone}</p>}
           </div>
 
           {/* Itens */}
           <div>
-            <p className="text-xs font-semibold uppercase mb-3" style={{ color: '#5c5c6b' }}>Itens</p>
-            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e35' }}>
+            <p className="text-xs font-semibold uppercase mb-3" style={{ color: 'var(--c-tx3)' }}>Itens</p>
+            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--c-bd0)' }}>
               <table className="w-full">
                 <thead>
-                  <tr style={{ background: '#242429' }}>
+                  <tr style={{ background: 'var(--c-bg2)' }}>
                     {['Descrição', 'Un', 'Qtd', 'Preço Unit.', 'Total'].map(h => (
                       <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase"
-                        style={{ color: '#5c5c6b' }}>{h}</th>
+                        style={{ color: 'var(--c-tx3)' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {budget.items.map((item, i) => (
-                    <tr key={i} style={{ borderTop: '1px solid #2e2e35' }}>
-                      <td className="px-4 py-3 text-sm" style={{ color: '#e0e0ec' }}>{item.description}</td>
-                      <td className="px-4 py-3 text-sm" style={{ color: '#8a8a9a' }}>{item.unit}</td>
-                      <td className="px-4 py-3 text-sm" style={{ color: '#8a8a9a' }}>{item.quantity}</td>
-                      <td className="px-4 py-3 text-sm" style={{ color: '#8a8a9a' }}>{fmt(item.unitPrice)}</td>
-                      <td className="px-4 py-3 text-sm font-semibold" style={{ color: '#e0e0ec' }}>{fmt(item.total)}</td>
+                    <tr key={i} style={{ borderTop: '1px solid var(--c-bd0)' }}>
+                      <td className="px-4 py-3 text-sm" style={{ color: 'var(--c-tx0)' }}>{item.description}</td>
+                      <td className="px-4 py-3 text-sm" style={{ color: 'var(--c-tx2)' }}>{item.unit}</td>
+                      <td className="px-4 py-3 text-sm" style={{ color: 'var(--c-tx2)' }}>{item.quantity}</td>
+                      <td className="px-4 py-3 text-sm" style={{ color: 'var(--c-tx2)' }}>{fmt(item.unitPrice)}</td>
+                      <td className="px-4 py-3 text-sm font-semibold" style={{ color: 'var(--c-tx0)' }}>{fmt(item.total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -454,7 +454,7 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
           {/* Totais */}
           <div className="flex justify-end">
             <div className="space-y-2 min-w-56">
-              <div className="flex justify-between text-sm" style={{ color: '#8a8a9a' }}>
+              <div className="flex justify-between text-sm" style={{ color: 'var(--c-tx2)' }}>
                 <span>Subtotal</span><span>{fmt(budget.subtotal)}</span>
               </div>
               {budget.discount > 0 && (
@@ -462,7 +462,7 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
                   <span>Desconto</span><span>- {fmt(budget.discount)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-lg font-bold pt-2" style={{ color: '#e0e0ec', borderTop: '1px solid #2e2e35' }}>
+              <div className="flex justify-between text-lg font-bold pt-2" style={{ color: 'var(--c-tx0)', borderTop: '1px solid var(--c-bd0)' }}>
                 <span>Total</span><span style={{ color: '#f97316' }}>{fmt(budget.total)}</span>
               </div>
             </div>
@@ -470,9 +470,9 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
 
           {/* Observações */}
           {budget.notes && (
-            <div className="rounded-xl p-4" style={{ background: '#242429' }}>
-              <p className="text-xs font-semibold uppercase mb-2" style={{ color: '#5c5c6b' }}>Observações</p>
-              <p className="text-sm" style={{ color: '#b8b8c8' }}>{budget.notes}</p>
+            <div className="rounded-xl p-4" style={{ background: 'var(--c-bg2)' }}>
+              <p className="text-xs font-semibold uppercase mb-2" style={{ color: 'var(--c-tx3)' }}>Observações</p>
+              <p className="text-sm" style={{ color: 'var(--c-tx1)' }}>{budget.notes}</p>
             </div>
           )}
 
@@ -503,11 +503,11 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
 
           {/* ─── Pagamentos (somente orçamentos aprovados) ─── */}
           {budget.status === 'aprovado' && (
-            <div className="space-y-4 pt-4" style={{ borderTop: '1px solid #2e2e35' }}>
+            <div className="space-y-4 pt-4" style={{ borderTop: '1px solid var(--c-bd0)' }}>
 
               {/* Cabeçalho */}
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#5c5c6b' }}>
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--c-tx3)' }}>
                   Pagamentos
                 </p>
                 {budget.paymentStatus && PAYMENT_STATUS_MAP[budget.paymentStatus] && (
@@ -523,11 +523,11 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
 
               {/* Barra de progresso */}
               <div>
-                <div className="flex justify-between text-xs mb-1.5" style={{ color: '#8a8a9a' }}>
+                <div className="flex justify-between text-xs mb-1.5" style={{ color: 'var(--c-tx2)' }}>
                   <span>Pago: {fmt(budget.totalPaid ?? 0)}</span>
                   <span>Total: {fmt(budget.total)}</span>
                 </div>
-                <div className="h-2 rounded-full overflow-hidden" style={{ background: '#242429' }}>
+                <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--c-bg2)' }}>
                   <div className="h-full rounded-full transition-all" style={{
                     width: `${Math.min(100, (((budget.totalPaid ?? 0) / budget.total) * 100))}%`,
                     background: (budget.totalPaid ?? 0) >= budget.total
@@ -545,10 +545,10 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
                     const isPending = p.status === 'fiado_pendente'
                     return (
                       <div key={p._id} className="flex items-center justify-between px-3 py-2.5 rounded-xl"
-                        style={{ background: '#242429' }}>
+                        style={{ background: 'var(--c-bg2)' }}>
                         <div>
-                          <p className="text-sm font-medium" style={{ color: '#e0e0ec' }}>{methodLabel}</p>
-                          <p className="text-xs mt-0.5" style={{ color: '#5c5c6b' }}>
+                          <p className="text-sm font-medium" style={{ color: 'var(--c-tx0)' }}>{methodLabel}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>
                             {isPending ? '⏳ Fiado pendente' : '✓ Recebido'}
                             {p.dueDate && isPending && ` · vence ${fmtDate(p.dueDate)}`}
                           </p>
@@ -679,14 +679,14 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
-      <div className="w-full max-w-4xl rounded-2xl flex flex-col" style={{ background: '#1a1a1f', border: '1px solid #2e2e35', maxHeight: '92vh' }}>
+      <div className="w-full max-w-4xl rounded-2xl flex flex-col" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', maxHeight: '92vh' }}>
 
         {/* Cabeçalho */}
-        <div className="flex items-center justify-between p-6" style={{ borderBottom: '1px solid #2e2e35' }}>
-          <h2 className="text-lg font-bold" style={{ color: '#e0e0ec' }}>
+        <div className="flex items-center justify-between p-6" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+          <h2 className="text-lg font-bold" style={{ color: 'var(--c-tx0)' }}>
             {isEdit ? 'Editar Orçamento' : 'Novo Orçamento'}
           </h2>
-          <button onClick={onClose} className="p-2 rounded-xl" style={{ color: '#5c5c6b', background: '#242429' }}>
+          <button onClick={onClose} className="p-2 rounded-xl" style={{ color: 'var(--c-tx3)', background: 'var(--c-bg2)' }}>
             <X size={18} />
           </button>
         </div>
@@ -719,11 +719,11 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
 
             <div className="space-y-3">
               {items.map((item, idx) => (
-                <div key={idx} className="rounded-xl p-4 space-y-3" style={{ background: '#242429', border: '1px solid #2e2e35' }}>
+                <div key={idx} className="rounded-xl p-4 space-y-3" style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd0)' }}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {/* Produto (opcional) */}
                     <div>
-                      <label className="block text-xs font-medium mb-1" style={{ color: '#8a8a9a' }}>Produto do catálogo (opcional)</label>
+                      <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx2)' }}>Produto do catálogo (opcional)</label>
                       <select value={item.productId} onChange={e => setItem(idx, 'productId', e.target.value)}
                         style={{ ...inputCls(false), fontSize: 13 }}>
                         <option value="">Digitar manualmente...</option>
@@ -732,34 +732,34 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
                     </div>
                     {/* Descrição */}
                     <div>
-                      <label className="block text-xs font-medium mb-1" style={{ color: '#8a8a9a' }}>Descrição *</label>
+                      <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx2)' }}>Descrição *</label>
                       <input value={item.description} onChange={e => setItem(idx, 'description', e.target.value)}
                         placeholder="Ex: Portão de ferro 2x2m" style={{ ...inputCls(false), fontSize: 13 }} />
                     </div>
                   </div>
                   <div className="grid grid-cols-4 gap-3 items-end">
                     <div>
-                      <label className="block text-xs font-medium mb-1" style={{ color: '#8a8a9a' }}>Unidade</label>
+                      <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx2)' }}>Unidade</label>
                       <select value={item.unit} onChange={e => setItem(idx, 'unit', e.target.value)}
                         style={{ ...inputCls(false), fontSize: 13 }}>
                         {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium mb-1" style={{ color: '#8a8a9a' }}>Quantidade</label>
+                      <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx2)' }}>Quantidade</label>
                       <input type="number" min="0.01" step="0.01" value={item.quantity}
                         onChange={e => setItem(idx, 'quantity', e.target.value)}
                         style={{ ...inputCls(false), fontSize: 13 }} />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium mb-1" style={{ color: '#8a8a9a' }}>Preço Unit. (R$)</label>
+                      <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx2)' }}>Preço Unit. (R$)</label>
                       <input type="number" min="0" step="0.01" value={item.unitPrice}
                         onChange={e => setItem(idx, 'unitPrice', e.target.value)}
                         style={{ ...inputCls(false), fontSize: 13 }} />
                     </div>
                     <div className="flex items-end justify-between gap-2">
                       <div>
-                        <p className="text-xs mb-1" style={{ color: '#8a8a9a' }}>Total</p>
+                        <p className="text-xs mb-1" style={{ color: 'var(--c-tx2)' }}>Total</p>
                         <p className="text-base font-bold" style={{ color: '#f97316' }}>
                           {fmt(Number(item.quantity) * Number(item.unitPrice))}
                         </p>
@@ -785,14 +785,14 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
                 style={{ ...inputCls(false), resize: 'vertical' }} />
             </Field>
             <div className="space-y-3">
-              <div className="flex justify-between text-sm" style={{ color: '#8a8a9a' }}>
-                <span>Subtotal</span><span className="font-medium" style={{ color: '#e0e0ec' }}>{fmt(subtotal)}</span>
+              <div className="flex justify-between text-sm" style={{ color: 'var(--c-tx2)' }}>
+                <span>Subtotal</span><span className="font-medium" style={{ color: 'var(--c-tx0)' }}>{fmt(subtotal)}</span>
               </div>
               <Field label="Desconto (R$)">
                 <input type="number" min="0" step="0.01" value={discount}
                   onChange={e => setDiscount(e.target.value)} style={inputCls(false)} />
               </Field>
-              <div className="flex justify-between text-xl font-bold pt-2" style={{ borderTop: '1px solid #2e2e35', color: '#e0e0ec' }}>
+              <div className="flex justify-between text-xl font-bold pt-2" style={{ borderTop: '1px solid var(--c-bd0)', color: 'var(--c-tx0)' }}>
                 <span>Total</span>
                 <span style={{ color: '#f97316' }}>{fmt(total)}</span>
               </div>
@@ -807,9 +807,9 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
         </div>
 
         {/* Rodapé */}
-        <div className="flex gap-3 p-6" style={{ borderTop: '1px solid #2e2e35' }}>
+        <div className="flex gap-3 p-6" style={{ borderTop: '1px solid var(--c-bd0)' }}>
           <button onClick={onClose} className="flex-1 py-3 rounded-xl text-sm font-medium"
-            style={{ background: '#242429', color: '#b8b8c8' }}>
+            style={{ background: 'var(--c-bg2)', color: 'var(--c-tx1)' }}>
             Cancelar
           </button>
           <button onClick={handleSave} disabled={saving}
@@ -948,13 +948,13 @@ const OrcamentosPage = () => {
       {/* Cabeçalho */}
       <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: '#e0e0ec' }}>Orçamentos</h1>
-          <p className="text-base mt-1" style={{ color: '#8a8a9a' }}>Crie e gerencie seus orçamentos</p>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--c-tx0)' }}>Orçamentos</h1>
+          <p className="text-base mt-1" style={{ color: 'var(--c-tx2)' }}>Crie e gerencie seus orçamentos</p>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={exportCSV}
             className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-medium"
-            style={{ background: '#1a1a1f', border: '1px solid #2e2e35', color: '#8a8a9a' }}
+            style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: 'var(--c-tx2)' }}
             title="Exportar CSV">
             <Download size={16} /> CSV
           </button>
@@ -970,16 +970,16 @@ const OrcamentosPage = () => {
       <div className="flex flex-col gap-3 mb-6">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex items-center gap-3 px-4 py-3 rounded-2xl flex-1"
-            style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-            <Search size={16} style={{ color: '#5c5c6b', flexShrink: 0 }} />
+            style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+            <Search size={16} style={{ color: 'var(--c-tx3)', flexShrink: 0 }} />
             <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
               placeholder="Buscar por cliente ou número..."
               className="flex-1 bg-transparent outline-none text-base"
-              style={{ color: '#e0e0ec' }} />
+              style={{ color: 'var(--c-tx0)' }} />
           </div>
           <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
             className="py-3 px-4 rounded-2xl text-base outline-none"
-            style={{ background: '#1a1a1f', border: '1px solid #2e2e35', color: '#e0e0ec', minWidth: 160 }}>
+            style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: 'var(--c-tx0)', minWidth: 160 }}>
             <option value="">Todos os status</option>
             {Object.entries(STATUS).map(([k, v]) => (
               <option key={k} value={k}>{v.label}</option>
@@ -988,14 +988,14 @@ const OrcamentosPage = () => {
         </div>
         {/* Filtro por período */}
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-xs font-medium" style={{ color: '#5c5c6b' }}>Período:</span>
+          <span className="text-xs font-medium" style={{ color: 'var(--c-tx3)' }}>Período:</span>
           <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(1) }}
             className="py-2 px-3 rounded-xl text-sm outline-none"
-            style={{ background: '#1a1a1f', border: '1px solid #2e2e35', color: dateFrom ? '#e0e0ec' : '#5c5c6b' }} />
-          <span className="text-xs" style={{ color: '#5c5c6b' }}>até</span>
+            style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: dateFrom ? 'var(--c-tx0)' : 'var(--c-tx3)' }} />
+          <span className="text-xs" style={{ color: 'var(--c-tx3)' }}>até</span>
           <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(1) }}
             className="py-2 px-3 rounded-xl text-sm outline-none"
-            style={{ background: '#1a1a1f', border: '1px solid #2e2e35', color: dateTo ? '#e0e0ec' : '#5c5c6b' }} />
+            style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: dateTo ? 'var(--c-tx0)' : 'var(--c-tx3)' }} />
           {(dateFrom || dateTo) && (
             <button onClick={() => { setDateFrom(''); setDateTo(''); setPage(1) }}
               className="text-xs px-3 py-1.5 rounded-xl"
@@ -1010,24 +1010,24 @@ const OrcamentosPage = () => {
       {loading ? (
         <div className="flex items-center justify-center h-56">
           <div className="w-10 h-10 border-4 rounded-full animate-spin"
-            style={{ borderColor: '#3d3d47', borderTopColor: '#f97316' }} />
+            style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
         </div>
       ) : budgets.length === 0 ? (
-        <div className="rounded-2xl text-center py-20" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-          <FileText size={48} className="mx-auto mb-4" style={{ color: '#2e2e35' }} />
-          <p className="text-lg font-medium" style={{ color: '#8a8a9a' }}>Nenhum orçamento encontrado</p>
-          <p className="text-base mt-1" style={{ color: '#5c5c6b' }}>Clique em "Novo Orçamento" para começar</p>
+        <div className="rounded-2xl text-center py-20" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+          <FileText size={48} className="mx-auto mb-4" style={{ color: 'var(--c-bd0)' }} />
+          <p className="text-lg font-medium" style={{ color: 'var(--c-tx2)' }}>Nenhum orçamento encontrado</p>
+          <p className="text-base mt-1" style={{ color: 'var(--c-tx3)' }}>Clique em "Novo Orçamento" para começar</p>
         </div>
       ) : (
         <>
           {/* Desktop */}
-          <div className="hidden md:block rounded-2xl overflow-hidden" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
+          <div className="hidden md:block rounded-2xl overflow-hidden" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
             <table className="w-full">
               <thead>
-                <tr style={{ borderBottom: '1px solid #2e2e35' }}>
+                <tr style={{ borderBottom: '1px solid var(--c-bd0)' }}>
                   {['Número', 'Cliente', 'Data', 'Validade', 'Total', 'Status', 'Ações'].map(h => (
                     <th key={h} className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider"
-                      style={{ color: '#5c5c6b' }}>{h}</th>
+                      style={{ color: 'var(--c-tx3)' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -1035,23 +1035,23 @@ const OrcamentosPage = () => {
                 {budgets.map(b => {
                   const isVencido = b.validUntil && b.status === 'enviado' && new Date(b.validUntil) < new Date()
                   return (
-                  <tr key={b._id} style={{ borderBottom: '1px solid #2e2e35' }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#242429'}
+                  <tr key={b._id} style={{ borderBottom: '1px solid var(--c-bd0)' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--c-bg2)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     <td className="px-5 py-4">
                       <span className="text-sm font-bold" style={{ color: '#f97316' }}>
                         ORC-{String(b.number).padStart(3, '0')}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-sm font-medium" style={{ color: '#e0e0ec' }}>
+                    <td className="px-5 py-4 text-sm font-medium" style={{ color: 'var(--c-tx0)' }}>
                       {b.client?.name ?? '—'}
                     </td>
-                    <td className="px-5 py-4 text-sm" style={{ color: '#8a8a9a' }}>
+                    <td className="px-5 py-4 text-sm" style={{ color: 'var(--c-tx2)' }}>
                       {fmtDate(b.createdAt)}
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm" style={{ color: isVencido ? '#ef4444' : '#8a8a9a' }}>
+                        <span className="text-sm" style={{ color: isVencido ? '#ef4444' : 'var(--c-tx2)' }}>
                           {fmtDate(b.validUntil)}
                         </span>
                         {isVencido && (
@@ -1062,7 +1062,7 @@ const OrcamentosPage = () => {
                         )}
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-base font-bold" style={{ color: '#e0e0ec' }}>
+                    <td className="px-5 py-4 text-base font-bold" style={{ color: 'var(--c-tx0)' }}>
                       {fmt(b.total)}
                     </td>
                     <td className="px-5 py-4"><StatusBadge status={b.status} /></td>
@@ -1073,7 +1073,7 @@ const OrcamentosPage = () => {
                           <Eye size={15} />
                         </button>
                         <button onClick={() => handleDuplicate(b._id)} className="p-2 rounded-lg"
-                          style={{ background: '#242429', color: '#8a8a9a' }} title="Duplicar">
+                          style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }} title="Duplicar">
                           <Copy size={15} />
                         </button>
                         {b.client?.phone && (
@@ -1093,7 +1093,7 @@ const OrcamentosPage = () => {
                         {b.status === 'rascunho' && (
                           <>
                             <button onClick={() => setEditBudget(b)} className="p-2 rounded-lg"
-                              style={{ background: '#242429', color: '#8a8a9a' }} title="Editar">
+                              style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }} title="Editar">
                               <Pencil size={15} />
                             </button>
                             <button onClick={() => handleDelete(b._id)} className="p-2 rounded-lg"
@@ -1116,14 +1116,14 @@ const OrcamentosPage = () => {
             {budgets.map(b => {
               const isVencidoMobile = b.validUntil && b.status === 'enviado' && new Date(b.validUntil) < new Date()
               return (
-              <div key={b._id} className="rounded-2xl p-5" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
+              <div key={b._id} className="rounded-2xl p-5" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div>
                     <p className="text-base font-bold" style={{ color: '#f97316' }}>
                       ORC-{String(b.number).padStart(3, '0')}
                     </p>
-                    <p className="text-sm font-medium mt-0.5" style={{ color: '#e0e0ec' }}>{b.client?.name}</p>
-                    <p className="text-sm mt-0.5" style={{ color: '#5c5c6b' }}>{fmtDate(b.createdAt)}</p>
+                    <p className="text-sm font-medium mt-0.5" style={{ color: 'var(--c-tx0)' }}>{b.client?.name}</p>
+                    <p className="text-sm mt-0.5" style={{ color: 'var(--c-tx3)' }}>{fmtDate(b.createdAt)}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <StatusBadge status={b.status} />
@@ -1136,7 +1136,7 @@ const OrcamentosPage = () => {
                   </div>
                 </div>
                 <div className="flex items-center justify-between mt-3">
-                  <p className="text-xl font-bold" style={{ color: '#e0e0ec' }}>{fmt(b.total)}</p>
+                  <p className="text-xl font-bold" style={{ color: 'var(--c-tx0)' }}>{fmt(b.total)}</p>
                   <div className="flex gap-2">
                     <button onClick={() => handleView(b._id)} className="p-2.5 rounded-xl"
                       style={{ background: 'rgba(249,115,22,0.1)', color: '#f97316' }}>
@@ -1173,12 +1173,12 @@ const OrcamentosPage = () => {
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-4 mt-6">
               <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                className="p-2.5 rounded-xl" style={{ background: '#1a1a1f', color: page === 1 ? '#3d3d47' : '#e0e0ec' }}>
+                className="p-2.5 rounded-xl" style={{ background: 'var(--c-bg1)', color: page === 1 ? 'var(--c-bd1)' : 'var(--c-tx0)' }}>
                 <ChevronLeft size={18} />
               </button>
-              <span className="text-base" style={{ color: '#8a8a9a' }}>Página {page} de {totalPages}</span>
+              <span className="text-base" style={{ color: 'var(--c-tx2)' }}>Página {page} de {totalPages}</span>
               <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                className="p-2.5 rounded-xl" style={{ background: '#1a1a1f', color: page === totalPages ? '#3d3d47' : '#e0e0ec' }}>
+                className="p-2.5 rounded-xl" style={{ background: 'var(--c-bg1)', color: page === totalPages ? 'var(--c-bd1)' : 'var(--c-tx0)' }}>
                 <ChevronRight size={18} />
               </button>
             </div>

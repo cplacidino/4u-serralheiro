@@ -25,16 +25,16 @@ const schema = z.object({
 
 const Field = ({ label, error, children }) => (
   <div>
-    <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>{label}</label>
+    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>{label}</label>
     {children}
     {error && <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{error}</p>}
   </div>
 )
 
 const inp = (err) => ({
-  background: '#242429',
-  border: `1px solid ${err ? '#ef4444' : '#3d3d47'}`,
-  color: '#e0e0ec', borderRadius: 10, padding: '9px 12px', fontSize: 13, width: '100%', outline: 'none',
+  background: 'var(--c-bg2)',
+  border: `1px solid ${err ? '#ef4444' : 'var(--c-bd1)'}`,
+  color: 'var(--c-tx0)', borderRadius: 10, padding: '9px 12px', fontSize: 13, width: '100%', outline: 'none',
 })
 
 const ClientModal = ({ client, onClose, onSuccess }) => {
@@ -81,9 +81,9 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto"
       style={{ background: 'rgba(0,0,0,0.7)' }}>
-      <div className="w-full max-w-xl rounded-2xl my-4" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-        <div className="p-5" style={{ borderBottom: '1px solid #2e2e35' }}>
-          <h2 className="text-base font-bold" style={{ color: '#e0e0ec' }}>
+      <div className="w-full max-w-xl rounded-2xl my-4" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+        <div className="p-5" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+          <h2 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>
             {isEdit ? 'Editar Cliente' : 'Novo Cliente'}
           </h2>
         </div>
@@ -143,7 +143,7 @@ const ClientModal = ({ client, onClose, onSuccess }) => {
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl text-sm" style={{ background: '#2e2e35', color: '#b8b8c8' }}>
+              className="flex-1 py-2.5 rounded-xl text-sm" style={{ background: 'var(--c-bd0)', color: 'var(--c-tx1)' }}>
               Cancelar
             </button>
             <button type="submit" disabled={isSubmitting}
@@ -221,13 +221,13 @@ const ClientesPage = () => {
     <div>
       <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: '#e0e0ec' }}>Clientes</h1>
-          <p className="text-base mt-1" style={{ color: '#8a8a9a' }}>Gerencie sua carteira de clientes</p>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--c-tx0)' }}>Clientes</h1>
+          <p className="text-base mt-1" style={{ color: 'var(--c-tx2)' }}>Gerencie sua carteira de clientes</p>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={exportCSV}
             className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-medium flex-shrink-0"
-            style={{ background: '#1a1a1f', border: '1px solid #2e2e35', color: '#8a8a9a' }}
+            style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: 'var(--c-tx2)' }}
             title="Exportar clientes em CSV">
             <Download size={16} /> CSV
           </button>
@@ -240,23 +240,23 @@ const ClientesPage = () => {
       </div>
 
       <div className="flex items-center gap-3 px-4 py-3 rounded-2xl mb-6"
-        style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-        <Search size={16} style={{ color: '#5c5c6b', flexShrink: 0 }} />
+        style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+        <Search size={16} style={{ color: 'var(--c-tx3)', flexShrink: 0 }} />
         <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
           placeholder="Buscar por nome, telefone, CPF/CNPJ..."
           className="flex-1 bg-transparent outline-none text-base"
-          style={{ color: '#e0e0ec' }} />
+          style={{ color: 'var(--c-tx0)' }} />
       </div>
 
       {loading ? (
         <div className="flex justify-center h-48 items-center">
           <div className="w-8 h-8 border-4 rounded-full animate-spin"
-            style={{ borderColor: '#3d3d47', borderTopColor: '#f97316' }} />
+            style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
         </div>
       ) : clients.length === 0 ? (
-        <div className="rounded-2xl text-center py-14" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-          <Users size={36} className="mx-auto mb-3" style={{ color: '#3d3d47' }} />
-          <p style={{ color: '#8a8a9a' }}>
+        <div className="rounded-2xl text-center py-14" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+          <Users size={36} className="mx-auto mb-3" style={{ color: 'var(--c-bd1)' }} />
+          <p style={{ color: 'var(--c-tx2)' }}>
             {search ? 'Nenhum cliente encontrado' : 'Cadastre seu primeiro cliente'}
           </p>
         </div>
@@ -264,7 +264,7 @@ const ClientesPage = () => {
         <div className="space-y-2">
           {clients.map((c) => (
             <div key={c._id} className="rounded-xl p-4 flex items-center gap-4"
-              style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
+              style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
               {/* Avatar */}
               <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
                 style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316' }}>
@@ -272,26 +272,26 @@ const ClientesPage = () => {
               </div>
               {/* Dados */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate" style={{ color: '#e0e0ec' }}>{c.name}</p>
+                <p className="text-sm font-semibold truncate" style={{ color: 'var(--c-tx0)' }}>{c.name}</p>
                 <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                   {c.phone && (
-                    <span className="flex items-center gap-1 text-xs" style={{ color: '#8a8a9a' }}>
+                    <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--c-tx2)' }}>
                       <Phone size={11} /> {c.phone}
                     </span>
                   )}
                   {c.email && (
-                    <span className="flex items-center gap-1 text-xs truncate" style={{ color: '#8a8a9a' }}>
+                    <span className="flex items-center gap-1 text-xs truncate" style={{ color: 'var(--c-tx2)' }}>
                       <Mail size={11} /> {c.email}
                     </span>
                   )}
                   {c.address?.city && (
-                    <span className="text-xs" style={{ color: '#5c5c6b' }}>{c.address.city}</span>
+                    <span className="text-xs" style={{ color: 'var(--c-tx3)' }}>{c.address.city}</span>
                   )}
                 </div>
               </div>
               {/* Tipo */}
               <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:block"
-                style={{ background: '#242429', color: '#8a8a9a' }}>
+                style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }}>
                 {c.type === 'pessoa_fisica' ? 'PF' : 'PJ'}
               </span>
               {/* Ações */}
@@ -305,25 +305,25 @@ const ClientesPage = () => {
                       window.open(`https://wa.me/${num}?text=${msg}`, '_blank')
                     }}
                     className="p-2 rounded-lg transition-colors"
-                    style={{ color: '#8a8a9a' }}
+                    style={{ color: 'var(--c-tx2)' }}
                     title="WhatsApp"
                     onMouseEnter={e => e.currentTarget.style.color = '#22c55e'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#8a8a9a'}>
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--c-tx2)'}>
                     <MessageCircle size={15} />
                   </button>
                 )}
                 <button onClick={() => setModal(c)}
                   className="p-2 rounded-lg transition-colors"
-                  style={{ color: '#8a8a9a' }}
+                  style={{ color: 'var(--c-tx2)' }}
                   onMouseEnter={e => e.currentTarget.style.color = '#f97316'}
-                  onMouseLeave={e => e.currentTarget.style.color = '#8a8a9a'}>
+                  onMouseLeave={e => e.currentTarget.style.color = 'var(--c-tx2)'}>
                   <Pencil size={15} />
                 </button>
                 <button onClick={() => handleDelete(c)}
                   className="p-2 rounded-lg transition-colors"
-                  style={{ color: '#8a8a9a' }}
+                  style={{ color: 'var(--c-tx2)' }}
                   onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                  onMouseLeave={e => e.currentTarget.style.color = '#8a8a9a'}>
+                  onMouseLeave={e => e.currentTarget.style.color = 'var(--c-tx2)'}>
                   <Trash2 size={15} />
                 </button>
               </div>
@@ -338,7 +338,7 @@ const ClientesPage = () => {
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
             <button key={p} onClick={() => setPage(p)}
               className="w-8 h-8 rounded-lg text-sm"
-              style={{ background: p === page ? '#f97316' : '#1a1a1f', color: p === page ? 'white' : '#8a8a9a' }}>
+              style={{ background: p === page ? '#f97316' : 'var(--c-bg1)', color: p === page ? 'white' : 'var(--c-tx2)' }}>
               {p}
             </button>
           ))}

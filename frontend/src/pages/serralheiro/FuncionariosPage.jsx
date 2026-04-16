@@ -21,13 +21,13 @@ const currentMonth = () => {
 }
 
 const inp = (err) => ({
-  background: '#242429', border: `1px solid ${err ? '#ef4444' : '#3d3d47'}`,
-  color: '#e0e0ec', borderRadius: 10, padding: '10px 14px', fontSize: 14,
+  background: 'var(--c-bg2)', border: `1px solid ${err ? '#ef4444' : 'var(--c-bd1)'}`,
+  color: 'var(--c-tx0)', borderRadius: 10, padding: '10px 14px', fontSize: 14,
   width: '100%', outline: 'none',
 })
 const Field = ({ label, error, children }) => (
   <div>
-    <label className="block text-sm font-medium mb-1.5" style={{ color: '#b8b8c8' }}>{label}</label>
+    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>{label}</label>
     {children}
     {error && <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{error}</p>}
   </div>
@@ -268,12 +268,12 @@ const EmployeeModal = ({ employee, onClose, onSaved }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto"
       style={{ background: 'rgba(0,0,0,0.75)' }}>
-      <div className="w-full max-w-lg rounded-2xl my-4" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-        <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid #2e2e35' }}>
-          <h2 className="text-base font-bold" style={{ color: '#e0e0ec' }}>
+      <div className="w-full max-w-lg rounded-2xl my-4" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+        <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+          <h2 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>
             {isEdit ? 'Editar Funcionário' : 'Novo Funcionário'}
           </h2>
-          <button onClick={onClose} className="p-2 rounded-xl" style={{ color: '#5c5c6b', background: '#242429' }}>
+          <button onClick={onClose} className="p-2 rounded-xl" style={{ color: 'var(--c-tx3)', background: 'var(--c-bg2)' }}>
             <X size={16} />
           </button>
         </div>
@@ -308,7 +308,7 @@ const EmployeeModal = ({ employee, onClose, onSaved }) => {
           </div>
           <div className="flex gap-3 pt-1">
             <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm"
-              style={{ background: '#2e2e35', color: '#b8b8c8' }}>Cancelar</button>
+              style={{ background: 'var(--c-bd0)', color: 'var(--c-tx1)' }}>Cancelar</button>
             <button onClick={handleSave} disabled={saving}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
               style={{ background: 'linear-gradient(135deg,#f97316,#ea6c10)', color: 'white', opacity: saving ? 0.7 : 1 }}>
@@ -355,13 +355,13 @@ const ValeModal = ({ employee, company, onClose, onSaved }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(0,0,0,0.8)' }}>
-      <div className="w-full max-w-md rounded-2xl" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-        <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid #2e2e35' }}>
+      <div className="w-full max-w-md rounded-2xl" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+        <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
           <div>
-            <h2 className="text-base font-bold" style={{ color: '#e0e0ec' }}>Emitir Vale</h2>
-            <p className="text-xs mt-0.5" style={{ color: '#5c5c6b' }}>{employee.name}</p>
+            <h2 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>Emitir Vale</h2>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>{employee.name}</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl" style={{ color: '#5c5c6b', background: '#242429' }}>
+          <button onClick={onClose} className="p-2 rounded-xl" style={{ color: 'var(--c-tx3)', background: 'var(--c-bg2)' }}>
             <X size={16} />
           </button>
         </div>
@@ -383,12 +383,12 @@ const ValeModal = ({ employee, company, onClose, onSaved }) => {
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
               style={{ ...inp(), resize: 'none' }} placeholder="Informações adicionais (opcional)..." />
           </Field>
-          <div className="rounded-xl p-3 text-xs" style={{ background: '#242429', color: '#8a8a9a' }}>
+          <div className="rounded-xl p-3 text-xs" style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }}>
             Ao confirmar, o comprovante será aberto para impressão e assinatura do funcionário.
           </div>
           <div className="flex gap-3 pt-1">
             <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm"
-              style={{ background: '#2e2e35', color: '#b8b8c8' }}>Cancelar</button>
+              style={{ background: 'var(--c-bd0)', color: 'var(--c-tx1)' }}>Cancelar</button>
             <button onClick={handleSave} disabled={saving}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
               style={{ background: 'linear-gradient(135deg,#f97316,#ea6c10)', color: 'white', opacity: saving ? 0.7 : 1 }}>
@@ -506,10 +506,10 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
         style={{ background: 'rgba(0,0,0,0.6)' }} onClick={onClose} />
 
       <div className="fixed top-0 right-0 h-full z-50 flex flex-col"
-        style={{ width: 'min(520px, 100vw)', background: '#1a1a1f', borderLeft: '1px solid #2e2e35', overflowY: 'auto' }}>
+        style={{ width: 'min(520px, 100vw)', background: 'var(--c-bg1)', borderLeft: '1px solid var(--c-bd0)', overflowY: 'auto' }}>
 
         {/* Cabeçalho */}
-        <div className="p-5 flex-shrink-0" style={{ borderBottom: '1px solid #2e2e35' }}>
+        <div className="p-5 flex-shrink-0" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-bold flex-shrink-0"
@@ -517,18 +517,18 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
                 {employee.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="text-base font-bold" style={{ color: '#e0e0ec' }}>{employee.name}</p>
-                <p className="text-sm" style={{ color: '#8a8a9a' }}>{employee.cargo || 'Sem cargo definido'}</p>
+                <p className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>{employee.name}</p>
+                <p className="text-sm" style={{ color: 'var(--c-tx2)' }}>{employee.cargo || 'Sem cargo definido'}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {isOwner && (
                 <button onClick={() => setShowEditModal(true)}
-                  className="p-2 rounded-xl" style={{ background: '#242429', color: '#8a8a9a' }} title="Editar">
+                  className="p-2 rounded-xl" style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }} title="Editar">
                   <Pencil size={15} />
                 </button>
               )}
-              <button onClick={onClose} className="p-2 rounded-xl" style={{ background: '#242429', color: '#5c5c6b' }}>
+              <button onClick={onClose} className="p-2 rounded-xl" style={{ background: 'var(--c-bg2)', color: 'var(--c-tx3)' }}>
                 <X size={16} />
               </button>
             </div>
@@ -536,23 +536,23 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
 
           {/* Info resumida */}
           <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-xl p-3 text-center" style={{ background: '#242429' }}>
-              <p className="text-xs mb-1" style={{ color: '#5c5c6b' }}>Salário Base</p>
+            <div className="rounded-xl p-3 text-center" style={{ background: 'var(--c-bg2)' }}>
+              <p className="text-xs mb-1" style={{ color: 'var(--c-tx3)' }}>Salário Base</p>
               <p className="text-sm font-bold" style={{ color: '#22c55e' }}>{fmt(employee.salary)}</p>
             </div>
-            <div className="rounded-xl p-3 text-center" style={{ background: '#242429' }}>
-              <p className="text-xs mb-1" style={{ color: '#5c5c6b' }}>Vales (mês)</p>
+            <div className="rounded-xl p-3 text-center" style={{ background: 'var(--c-bg2)' }}>
+              <p className="text-xs mb-1" style={{ color: 'var(--c-tx3)' }}>Vales (mês)</p>
               <p className="text-sm font-bold" style={{ color: '#f97316' }}>{fmt(employee.currentMonthVales ?? totalVales)}</p>
             </div>
-            <div className="rounded-xl p-3 text-center" style={{ background: '#242429' }}>
-              <p className="text-xs mb-1" style={{ color: '#5c5c6b' }}>Admissão</p>
-              <p className="text-sm font-bold" style={{ color: '#e0e0ec' }}>{fmtDate(employee.admissionDate)}</p>
+            <div className="rounded-xl p-3 text-center" style={{ background: 'var(--c-bg2)' }}>
+              <p className="text-xs mb-1" style={{ color: 'var(--c-tx3)' }}>Admissão</p>
+              <p className="text-sm font-bold" style={{ color: 'var(--c-tx0)' }}>{fmtDate(employee.admissionDate)}</p>
             </div>
           </div>
 
           {/* Telefone / CPF */}
           {(employee.phone || employee.cpf) && (
-            <div className="flex gap-3 mt-3 text-xs" style={{ color: '#5c5c6b' }}>
+            <div className="flex gap-3 mt-3 text-xs" style={{ color: 'var(--c-tx3)' }}>
               {employee.phone && <span>Tel: {employee.phone}</span>}
               {employee.cpf && <span>CPF: {employee.cpf}</span>}
             </div>
@@ -561,25 +561,25 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
 
         {/* Navegador de mês */}
         <div className="flex items-center justify-between px-5 py-3 flex-shrink-0"
-          style={{ borderBottom: '1px solid #2e2e35', background: '#111114' }}>
-          <button onClick={prevMonth} className="p-1.5 rounded-lg" style={{ color: '#8a8a9a', background: '#1a1a1f' }}>
+          style={{ borderBottom: '1px solid var(--c-bd0)', background: 'var(--c-bg0)' }}>
+          <button onClick={prevMonth} className="p-1.5 rounded-lg" style={{ color: 'var(--c-tx2)', background: 'var(--c-bg1)' }}>
             <ChevronLeft size={16} />
           </button>
-          <span className="text-sm font-semibold capitalize" style={{ color: '#e0e0ec' }}>
+          <span className="text-sm font-semibold capitalize" style={{ color: 'var(--c-tx0)' }}>
             {monthLabel(month)}
           </span>
-          <button onClick={nextMonth} className="p-1.5 rounded-lg" style={{ color: '#8a8a9a', background: '#1a1a1f' }}>
+          <button onClick={nextMonth} className="p-1.5 rounded-lg" style={{ color: 'var(--c-tx2)', background: 'var(--c-bg1)' }}>
             <ChevronRight size={16} />
           </button>
         </div>
 
         {/* Abas */}
-        <div className="flex flex-shrink-0" style={{ borderBottom: '1px solid #2e2e35' }}>
+        <div className="flex flex-shrink-0" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
           {[{ id: 'vales', label: 'Vales', icon: Receipt }, { id: 'pagamento', label: 'Pagamento', icon: Wallet }].map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setTab(id)}
               className="flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium transition-all"
               style={{
-                color: tab === id ? '#f97316' : '#5c5c6b',
+                color: tab === id ? '#f97316' : 'var(--c-tx3)',
                 borderBottom: `2px solid ${tab === id ? '#f97316' : 'transparent'}`,
               }}>
               <Icon size={15} /> {label}
@@ -604,12 +604,12 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
               {loadingVales ? (
                 <div className="flex justify-center py-10">
                   <div className="w-7 h-7 border-4 rounded-full animate-spin"
-                    style={{ borderColor: '#3d3d47', borderTopColor: '#f97316' }} />
+                    style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
                 </div>
               ) : vales.length === 0 ? (
                 <div className="text-center py-10">
-                  <Receipt size={36} className="mx-auto mb-3" style={{ color: '#2e2e35' }} />
-                  <p className="text-sm" style={{ color: '#5c5c6b' }}>Nenhum vale neste mês</p>
+                  <Receipt size={36} className="mx-auto mb-3" style={{ color: 'var(--c-bd0)' }} />
+                  <p className="text-sm" style={{ color: 'var(--c-tx3)' }}>Nenhum vale neste mês</p>
                 </div>
               ) : (
                 <>
@@ -620,7 +620,7 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
                       <span className="text-base font-bold" style={{ color: '#f97316' }}>{fmt(totalVales)}</span>
                       <button onClick={exportValesCSV}
                         className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
-                        style={{ background: '#1a1a1f', border: '1px solid #3d3d47', color: '#8a8a9a' }}
+                        style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd1)', color: 'var(--c-tx2)' }}
                         title="Exportar CSV">
                         <Download size={12} /> CSV
                       </button>
@@ -628,7 +628,7 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
                   </div>
 
                   {vales.map(v => (
-                    <div key={v._id} className="rounded-xl p-4" style={{ background: '#242429', border: '1px solid #2e2e35' }}>
+                    <div key={v._id} className="rounded-xl p-4" style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd0)' }}>
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -644,14 +644,14 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
                                 </span>
                             }
                           </div>
-                          <p className="text-sm mt-1" style={{ color: '#b8b8c8' }}>{v.reason || '—'}</p>
-                          <p className="text-xs mt-1" style={{ color: '#5c5c6b' }}>{fmtDate(v.date)}</p>
-                          {v.notes && <p className="text-xs mt-1 italic" style={{ color: '#5c5c6b' }}>{v.notes}</p>}
+                          <p className="text-sm mt-1" style={{ color: 'var(--c-tx1)' }}>{v.reason || '—'}</p>
+                          <p className="text-xs mt-1" style={{ color: 'var(--c-tx3)' }}>{fmtDate(v.date)}</p>
+                          {v.notes && <p className="text-xs mt-1 italic" style={{ color: 'var(--c-tx3)' }}>{v.notes}</p>}
                         </div>
                         {isOwner && (
                           <div className="flex gap-1.5 flex-shrink-0">
                             <button onClick={() => printVale(v, employee, company)}
-                              className="p-2 rounded-lg" style={{ background: '#1a1a1f', color: '#8a8a9a' }} title="Reimprimir">
+                              className="p-2 rounded-lg" style={{ background: 'var(--c-bg1)', color: 'var(--c-tx2)' }} title="Reimprimir">
                               <Printer size={13} />
                             </button>
                             {!v.signed && (
@@ -680,23 +680,23 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
               {loadingPayroll ? (
                 <div className="flex justify-center py-10">
                   <div className="w-7 h-7 border-4 rounded-full animate-spin"
-                    style={{ borderColor: '#3d3d47', borderTopColor: '#f97316' }} />
+                    style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
                 </div>
               ) : payroll ? (
                 <>
                   {/* KPIs */}
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="rounded-xl p-3 text-center" style={{ background: '#242429', border: '1px solid #2e2e35' }}>
-                      <p className="text-xs mb-1" style={{ color: '#5c5c6b' }}>Salário Base</p>
+                    <div className="rounded-xl p-3 text-center" style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd0)' }}>
+                      <p className="text-xs mb-1" style={{ color: 'var(--c-tx3)' }}>Salário Base</p>
                       <p className="text-sm font-bold" style={{ color: '#22c55e' }}>{fmt(payroll.salary)}</p>
                     </div>
-                    <div className="rounded-xl p-3 text-center" style={{ background: '#242429', border: '1px solid #2e2e35' }}>
-                      <p className="text-xs mb-1" style={{ color: '#5c5c6b' }}>Total Vales</p>
+                    <div className="rounded-xl p-3 text-center" style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd0)' }}>
+                      <p className="text-xs mb-1" style={{ color: 'var(--c-tx3)' }}>Total Vales</p>
                       <p className="text-sm font-bold" style={{ color: '#ef4444' }}>− {fmt(payroll.totalVales)}</p>
                     </div>
                     <div className="rounded-xl p-3 text-center"
-                      style={{ background: payroll.netPay > 0 ? 'rgba(34,197,94,0.08)' : '#242429', border: `1px solid ${payroll.netPay > 0 ? 'rgba(34,197,94,0.3)' : '#2e2e35'}` }}>
-                      <p className="text-xs mb-1" style={{ color: '#5c5c6b' }}>A Pagar</p>
+                      style={{ background: payroll.netPay > 0 ? 'rgba(34,197,94,0.08)' : 'var(--c-bg2)', border: `1px solid ${payroll.netPay > 0 ? 'rgba(34,197,94,0.3)' : 'var(--c-bd0)'}` }}>
+                      <p className="text-xs mb-1" style={{ color: 'var(--c-tx3)' }}>A Pagar</p>
                       <p className="text-sm font-bold" style={{ color: '#22c55e' }}>{fmt(payroll.netPay)}</p>
                     </div>
                   </div>
@@ -713,17 +713,17 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
                   {/* Lista de vales */}
                   {payroll.vales.length > 0 ? (
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#5c5c6b' }}>
+                      <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--c-tx3)' }}>
                         Vales do mês ({payroll.vales.length})
                       </p>
-                      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e35' }}>
+                      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--c-bd0)' }}>
                         {payroll.vales.map((v, i) => (
                           <div key={v._id}
                             className="flex items-center justify-between px-4 py-3"
-                            style={{ borderTop: i > 0 ? '1px solid #2e2e35' : 'none', background: '#242429' }}>
+                            style={{ borderTop: i > 0 ? '1px solid var(--c-bd0)' : 'none', background: 'var(--c-bg2)' }}>
                             <div>
-                              <p className="text-sm font-medium" style={{ color: '#e0e0ec' }}>{v.reason || '—'}</p>
-                              <p className="text-xs mt-0.5" style={{ color: '#5c5c6b' }}>{fmtDate(v.date)}</p>
+                              <p className="text-sm font-medium" style={{ color: 'var(--c-tx0)' }}>{v.reason || '—'}</p>
+                              <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>{fmtDate(v.date)}</p>
                             </div>
                             <p className="text-sm font-bold" style={{ color: '#ef4444' }}>− {fmt(v.amount)}</p>
                           </div>
@@ -732,14 +732,14 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
                     </div>
                   ) : (
                     <div className="text-center py-6">
-                      <p className="text-sm" style={{ color: '#5c5c6b' }}>Nenhum vale neste mês — pagamento integral.</p>
+                      <p className="text-sm" style={{ color: 'var(--c-tx3)' }}>Nenhum vale neste mês — pagamento integral.</p>
                     </div>
                   )}
 
                   {/* Botão imprimir */}
                   <button onClick={() => printPayroll(payroll)}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold"
-                    style={{ background: '#242429', border: '1px solid #3d3d47', color: '#b8b8c8' }}>
+                    style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)', color: 'var(--c-tx1)' }}>
                     <Printer size={15} /> Imprimir Resumo de Pagamento
                   </button>
                 </>
@@ -801,8 +801,8 @@ const FuncionariosPage = () => {
     <div>
       <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: '#e0e0ec' }}>Funcionários</h1>
-          <p className="text-base mt-1" style={{ color: '#8a8a9a' }}>Gerencie sua equipe e controle vales</p>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--c-tx0)' }}>Funcionários</h1>
+          <p className="text-base mt-1" style={{ color: 'var(--c-tx2)' }}>Gerencie sua equipe e controle vales</p>
         </div>
         {isOwner && (
           <button onClick={() => setShowCreate(true)}
@@ -815,43 +815,43 @@ const FuncionariosPage = () => {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
-        <div className="rounded-2xl p-5" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-          <p className="text-sm mb-2" style={{ color: '#5c5c6b' }}>Total</p>
-          <p className="text-3xl font-bold" style={{ color: '#e0e0ec' }}>{employees.length}</p>
+        <div className="rounded-2xl p-5" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+          <p className="text-sm mb-2" style={{ color: 'var(--c-tx3)' }}>Total</p>
+          <p className="text-3xl font-bold" style={{ color: 'var(--c-tx0)' }}>{employees.length}</p>
         </div>
-        <div className="rounded-2xl p-5" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-          <p className="text-sm mb-2" style={{ color: '#5c5c6b' }}>Folha Mensal (base)</p>
+        <div className="rounded-2xl p-5" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+          <p className="text-sm mb-2" style={{ color: 'var(--c-tx3)' }}>Folha Mensal (base)</p>
           <p className="text-3xl font-bold" style={{ color: '#22c55e' }}>{fmt(totalSalaries)}</p>
         </div>
-        <div className="rounded-2xl p-5" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-          <p className="text-sm mb-2" style={{ color: '#5c5c6b' }}>Vales Emitidos (mês)</p>
+        <div className="rounded-2xl p-5" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+          <p className="text-sm mb-2" style={{ color: 'var(--c-tx3)' }}>Vales Emitidos (mês)</p>
           <p className="text-3xl font-bold" style={{ color: '#f97316' }}>{fmt(totalValesMonth)}</p>
         </div>
       </div>
 
       {/* Busca */}
       <div className="flex items-center gap-3 px-4 py-3 rounded-2xl mb-6"
-        style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-        <Search size={16} style={{ color: '#5c5c6b', flexShrink: 0 }} />
+        style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+        <Search size={16} style={{ color: 'var(--c-tx3)', flexShrink: 0 }} />
         <input value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Buscar funcionário por nome ou cargo..."
-          className="flex-1 bg-transparent outline-none text-base" style={{ color: '#e0e0ec' }} />
+          className="flex-1 bg-transparent outline-none text-base" style={{ color: 'var(--c-tx0)' }} />
       </div>
 
       {/* Lista */}
       {loading ? (
         <div className="flex justify-center py-16">
           <div className="w-9 h-9 border-4 rounded-full animate-spin"
-            style={{ borderColor: '#3d3d47', borderTopColor: '#f97316' }} />
+            style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
         </div>
       ) : employees.length === 0 ? (
-        <div className="rounded-2xl text-center py-20" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-          <Users size={48} className="mx-auto mb-4" style={{ color: '#2e2e35' }} />
-          <p className="text-lg font-medium" style={{ color: '#8a8a9a' }}>
+        <div className="rounded-2xl text-center py-20" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+          <Users size={48} className="mx-auto mb-4" style={{ color: 'var(--c-bd0)' }} />
+          <p className="text-lg font-medium" style={{ color: 'var(--c-tx2)' }}>
             {search ? 'Nenhum funcionário encontrado' : 'Nenhum funcionário cadastrado'}
           </p>
           {!search && isOwner && (
-            <p className="text-base mt-1" style={{ color: '#5c5c6b' }}>Clique em "Novo Funcionário" para começar</p>
+            <p className="text-base mt-1" style={{ color: 'var(--c-tx3)' }}>Clique em "Novo Funcionário" para começar</p>
           )}
         </div>
       ) : (
@@ -862,7 +862,7 @@ const FuncionariosPage = () => {
             return (
               <div key={e._id}
                 className="rounded-2xl p-5 flex flex-col gap-4 cursor-pointer transition-all"
-                style={{ background: '#1a1a1f', border: `1px solid ${hasVales ? 'rgba(249,115,22,0.25)' : '#2e2e35'}` }}
+                style={{ background: 'var(--c-bg1)', border: `1px solid ${hasVales ? 'rgba(249,115,22,0.25)' : 'var(--c-bd0)'}` }}
                 onClick={() => setSelected(e)}>
 
                 {/* Nome e cargo */}
@@ -872,32 +872,32 @@ const FuncionariosPage = () => {
                     {e.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-base font-semibold truncate" style={{ color: '#e0e0ec' }}>{e.name}</p>
-                    <p className="text-xs truncate" style={{ color: '#8a8a9a' }}>{e.cargo || 'Sem cargo'}</p>
+                    <p className="text-base font-semibold truncate" style={{ color: 'var(--c-tx0)' }}>{e.name}</p>
+                    <p className="text-xs truncate" style={{ color: 'var(--c-tx2)' }}>{e.cargo || 'Sem cargo'}</p>
                   </div>
                 </div>
 
                 {/* Valores */}
                 <div className="grid grid-cols-3 gap-2">
                   <div className="text-center">
-                    <p className="text-xs mb-0.5" style={{ color: '#5c5c6b' }}>Salário</p>
+                    <p className="text-xs mb-0.5" style={{ color: 'var(--c-tx3)' }}>Salário</p>
                     <p className="text-sm font-semibold" style={{ color: '#22c55e' }}>{fmt(e.salary)}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-xs mb-0.5" style={{ color: '#5c5c6b' }}>Vales</p>
-                    <p className="text-sm font-semibold" style={{ color: hasVales ? '#f97316' : '#5c5c6b' }}>
+                    <p className="text-xs mb-0.5" style={{ color: 'var(--c-tx3)' }}>Vales</p>
+                    <p className="text-sm font-semibold" style={{ color: hasVales ? '#f97316' : 'var(--c-tx3)' }}>
                       {hasVales ? `− ${fmt(e.currentMonthVales)}` : '—'}
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="text-xs mb-0.5" style={{ color: '#5c5c6b' }}>A Pagar</p>
-                    <p className="text-sm font-semibold" style={{ color: '#e0e0ec' }}>{e.salary > 0 ? fmt(netPay) : '—'}</p>
+                    <p className="text-xs mb-0.5" style={{ color: 'var(--c-tx3)' }}>A Pagar</p>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--c-tx0)' }}>{e.salary > 0 ? fmt(netPay) : '—'}</p>
                   </div>
                 </div>
 
                 {/* Ações */}
                 {isOwner && (
-                  <div className="flex gap-2 pt-1" style={{ borderTop: '1px solid #2e2e35' }}>
+                  <div className="flex gap-2 pt-1" style={{ borderTop: '1px solid var(--c-bd0)' }}>
                     <button
                       onClick={ev => { ev.stopPropagation(); setSelected(e) }}
                       className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs"
@@ -907,9 +907,9 @@ const FuncionariosPage = () => {
                     <button
                       onClick={ev => { ev.stopPropagation(); handleDelete(e) }}
                       className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
-                      style={{ background: '#242429', color: '#8a8a9a' }}
+                      style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }}
                       onMouseEnter={ev => ev.currentTarget.style.color = '#ef4444'}
-                      onMouseLeave={ev => ev.currentTarget.style.color = '#8a8a9a'}>
+                      onMouseLeave={ev => ev.currentTarget.style.color = 'var(--c-tx2)'}>
                       <Trash2 size={12} />
                     </button>
                   </div>

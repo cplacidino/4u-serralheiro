@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { useTheme } from '../../contexts/ThemeContext'
 import toast from 'react-hot-toast'
-import { LayoutDashboard, Building2, CreditCard, LogOut, Menu, X, Bell } from 'lucide-react'
+import { LayoutDashboard, Building2, CreditCard, LogOut, Menu, X, Bell, Sun, Moon } from 'lucide-react'
 import api from '../../services/api'
 
 const navItems = [
@@ -12,12 +13,12 @@ const navItems = [
   { to: '/admin/alertas', label: 'Alertas', icon: Bell },
 ]
 
-const SidebarContent = ({ onClose, user, onLogout, alertCount }) => (
+const SidebarContent = ({ onClose, user, onLogout, alertCount, theme, toggleTheme }) => (
   <div className="flex flex-col h-full">
     {/* Logo */}
-    <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid #2e2e35' }}>
+    <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
       <div>
-        <p className="text-base font-bold" style={{ color: '#e0e0ec' }}>
+        <p className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>
           4u <span style={{ color: '#f97316' }}>Serralheiro</span>
         </p>
         <span className="text-xs px-2 py-0.5 rounded-full mt-0.5 inline-block"
@@ -26,7 +27,7 @@ const SidebarContent = ({ onClose, user, onLogout, alertCount }) => (
         </span>
       </div>
       {onClose && (
-        <button onClick={onClose} className="lg:hidden p-1" style={{ color: '#5c5c6b' }}>
+        <button onClick={onClose} className="lg:hidden p-1" style={{ color: 'var(--c-tx3)' }}>
           <X size={18} />
         </button>
       )}
@@ -39,7 +40,7 @@ const SidebarContent = ({ onClose, user, onLogout, alertCount }) => (
           className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
           style={({ isActive }) => ({
             background: isActive ? 'rgba(249,115,22,0.15)' : 'transparent',
-            color: isActive ? '#f97316' : '#8a8a9a',
+            color: isActive ? '#f97316' : 'var(--c-tx2)',
           })}>
           <span className="flex items-center gap-3">
             <Icon size={17} />
@@ -57,22 +58,30 @@ const SidebarContent = ({ onClose, user, onLogout, alertCount }) => (
     </nav>
 
     {/* Usuário + logout */}
-    <div className="p-3" style={{ borderTop: '1px solid #2e2e35' }}>
+    <div className="p-3" style={{ borderTop: '1px solid var(--c-bd0)' }}>
       <div className="flex items-center gap-2 px-2 py-2 mb-1">
         <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
           style={{ background: 'rgba(249,115,22,0.2)', color: '#f97316' }}>
           {user?.name?.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-medium truncate" style={{ color: '#e0e0ec' }}>{user?.name}</p>
-          <p className="truncate" style={{ color: '#5c5c6b', fontSize: 10 }}>{user?.email}</p>
+          <p className="text-xs font-medium truncate" style={{ color: 'var(--c-tx0)' }}>{user?.name}</p>
+          <p className="truncate" style={{ color: 'var(--c-tx3)', fontSize: 10 }}>{user?.email}</p>
         </div>
       </div>
+      <button onClick={toggleTheme}
+        className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-sm transition-colors mb-1"
+        style={{ color: 'var(--c-tx2)', background: 'var(--c-bg0)' }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(249,115,22,0.1)'; e.currentTarget.style.color = '#f97316' }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'var(--c-bg0)'; e.currentTarget.style.color = 'var(--c-tx2)' }}>
+        {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+        {theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+      </button>
       <button onClick={onLogout}
         className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-sm transition-colors"
-        style={{ color: '#8a8a9a' }}
+        style={{ color: 'var(--c-tx2)' }}
         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#ef4444' }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#8a8a9a' }}>
+        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--c-tx2)' }}>
         <LogOut size={16} /> Sair
       </button>
     </div>
@@ -83,6 +92,7 @@ const AdminLayout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [alertCount, setAlertCount] = useState(0)
   const { user, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -111,12 +121,12 @@ const AdminLayout = () => {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#111114' }}>
+    <div className="min-h-screen flex" style={{ background: 'var(--c-bg0)' }}>
 
       {/* Sidebar desktop */}
       <aside className="hidden lg:flex flex-col flex-shrink-0"
-        style={{ width: 220, background: '#1a1a1f', borderRight: '1px solid #2e2e35' }}>
-        <SidebarContent user={user} onLogout={handleLogout} alertCount={alertCount} />
+        style={{ width: 220, background: 'var(--c-bg1)', borderRight: '1px solid var(--c-bd0)' }}>
+        <SidebarContent user={user} onLogout={handleLogout} alertCount={alertCount} theme={theme} toggleTheme={toggleTheme} />
       </aside>
 
       {/* Overlay mobile */}
@@ -128,36 +138,41 @@ const AdminLayout = () => {
       {/* Drawer mobile */}
       <aside className="fixed top-0 left-0 h-full z-40 lg:hidden flex flex-col"
         style={{
-          width: 220, background: '#1a1a1f', borderRight: '1px solid #2e2e35',
+          width: 220, background: 'var(--c-bg1)', borderRight: '1px solid var(--c-bd0)',
           transform: drawerOpen ? 'translateX(0)' : 'translateX(-220px)',
           transition: 'transform 0.25s ease',
         }}>
-        <SidebarContent onClose={() => setDrawerOpen(false)} user={user} onLogout={handleLogout} alertCount={alertCount} />
+        <SidebarContent onClose={() => setDrawerOpen(false)} user={user} onLogout={handleLogout} alertCount={alertCount} theme={theme} toggleTheme={toggleTheme} />
       </aside>
 
       {/* Conteúdo principal */}
       <main className="flex-1 min-w-0 flex flex-col">
         <header className="sticky top-0 z-20 flex items-center gap-3 px-4 py-3"
-          style={{ background: '#111114', borderBottom: '1px solid #2e2e35' }}>
+          style={{ background: 'var(--c-bg0)', borderBottom: '1px solid var(--c-bd0)' }}>
           <button onClick={() => setDrawerOpen(true)} className="lg:hidden p-2 rounded-xl"
-            style={{ color: '#8a8a9a', background: '#1a1a1f' }}>
+            style={{ color: 'var(--c-tx2)', background: 'var(--c-bg1)' }}>
             <Menu size={18} />
           </button>
-          <span className="text-sm font-semibold lg:hidden" style={{ color: '#e0e0ec' }}>
+          <span className="text-sm font-semibold lg:hidden" style={{ color: 'var(--c-tx0)' }}>
             4u <span style={{ color: '#f97316' }}>Serralheiro</span>
           </span>
-          {/* Sino de alertas no header mobile */}
-          {alertCount > 0 && (
-            <button onClick={() => navigate('/admin/alertas')}
-              className="lg:hidden relative p-2 rounded-xl ml-auto"
-              style={{ background: '#1a1a1f', color: '#eab308' }}>
-              <Bell size={18} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-xs font-bold flex items-center justify-center"
-                style={{ background: '#ef4444', color: 'white', fontSize: 9 }}>
-                {alertCount > 9 ? '9+' : alertCount}
-              </span>
+          <div className="lg:hidden flex items-center gap-2 ml-auto">
+            <button onClick={toggleTheme} className="p-2 rounded-xl"
+              style={{ color: 'var(--c-tx2)', background: 'var(--c-bg1)' }}>
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-          )}
+            {alertCount > 0 && (
+              <button onClick={() => navigate('/admin/alertas')}
+                className="relative p-2 rounded-xl"
+                style={{ background: 'var(--c-bg1)', color: '#eab308' }}>
+                <Bell size={18} />
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-xs font-bold flex items-center justify-center"
+                  style={{ background: '#ef4444', color: 'white', fontSize: 9 }}>
+                  {alertCount > 9 ? '9+' : alertCount}
+                </span>
+              </button>
+            )}
+          </div>
         </header>
 
         <div className="flex-1 p-4 md:p-6">

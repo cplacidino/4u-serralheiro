@@ -26,15 +26,15 @@ const schema = z.object({
 
 const Field = ({ label, error, children }) => (
   <div>
-    <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>{label}</label>
+    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>{label}</label>
     {children}
     {error && <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{error}</p>}
   </div>
 )
 
 const inp = (err) => ({
-  background: '#242429', border: `1px solid ${err ? '#ef4444' : '#3d3d47'}`,
-  color: '#e0e0ec', borderRadius: 10, padding: '9px 12px', fontSize: 13, width: '100%', outline: 'none',
+  background: 'var(--c-bg2)', border: `1px solid ${err ? '#ef4444' : 'var(--c-bd1)'}`,
+  color: 'var(--c-tx0)', borderRadius: 10, padding: '9px 12px', fontSize: 13, width: '100%', outline: 'none',
 })
 
 const ProductModal = ({ product, onClose, onSuccess }) => {
@@ -63,9 +63,9 @@ const ProductModal = ({ product, onClose, onSuccess }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto"
       style={{ background: 'rgba(0,0,0,0.7)' }}>
-      <div className="w-full max-w-lg rounded-2xl my-4" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-        <div className="p-5" style={{ borderBottom: '1px solid #2e2e35' }}>
-          <h2 className="text-base font-bold" style={{ color: '#e0e0ec' }}>
+      <div className="w-full max-w-lg rounded-2xl my-4" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+        <div className="p-5" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+          <h2 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>
             {isEdit ? 'Editar Produto' : 'Novo Produto / Serviço'}
           </h2>
         </div>
@@ -109,7 +109,7 @@ const ProductModal = ({ product, onClose, onSuccess }) => {
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl text-sm" style={{ background: '#2e2e35', color: '#b8b8c8' }}>
+              className="flex-1 py-2.5 rounded-xl text-sm" style={{ background: 'var(--c-bd0)', color: 'var(--c-tx1)' }}>
               Cancelar
             </button>
             <button type="submit" disabled={isSubmitting}
@@ -153,29 +153,29 @@ const StockModal = ({ product, onClose, onSuccess }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(0,0,0,0.7)' }}>
-      <div className="w-full max-w-sm rounded-2xl" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-        <div className="p-5" style={{ borderBottom: '1px solid #2e2e35' }}>
-          <h2 className="text-base font-bold" style={{ color: '#e0e0ec' }}>Ajustar Estoque</h2>
-          <p className="text-xs mt-0.5" style={{ color: '#5c5c6b' }}>{product.name}</p>
+      <div className="w-full max-w-sm rounded-2xl" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+        <div className="p-5" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+          <h2 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>Ajustar Estoque</h2>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>{product.name}</p>
         </div>
         <div className="p-5 space-y-4">
           {/* Estoque atual */}
           <div className="flex items-center justify-between rounded-xl px-4 py-3"
-            style={{ background: '#242429' }}>
-            <span className="text-sm" style={{ color: '#8a8a9a' }}>Estoque atual</span>
+            style={{ background: 'var(--c-bg2)' }}>
+            <span className="text-sm" style={{ color: 'var(--c-tx2)' }}>Estoque atual</span>
             <span className="text-base font-bold" style={{ color: '#f97316' }}>
               {product.stock} {product.unit}
             </span>
           </div>
 
           {/* Tipo */}
-          <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #3d3d47' }}>
+          <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--c-bd1)' }}>
             {[{ v: 'entrada', label: '+ Entrada' }, { v: 'saida', label: '− Saída' }].map(({ v, label }) => (
               <button key={v} onClick={() => setType(v)}
                 className="flex-1 py-2.5 text-sm font-semibold transition-all"
                 style={{
-                  background: type === v ? (v === 'entrada' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)') : '#242429',
-                  color: type === v ? (v === 'entrada' ? '#22c55e' : '#ef4444') : '#8a8a9a',
+                  background: type === v ? (v === 'entrada' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)') : 'var(--c-bg2)',
+                  color: type === v ? (v === 'entrada' ? '#22c55e' : '#ef4444') : 'var(--c-tx2)',
                 }}>
                 {label}
               </button>
@@ -184,29 +184,29 @@ const StockModal = ({ product, onClose, onSuccess }) => {
 
           {/* Quantidade */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>
               Quantidade ({product.unit}) *
             </label>
             <input value={qty} onChange={e => { setQty(e.target.value); setError('') }}
               type="number" step="0.01" min="0.01"
-              style={{ background: '#242429', border: `1px solid ${error ? '#ef4444' : '#3d3d47'}`, color: '#e0e0ec', borderRadius: 10, padding: '10px 14px', fontSize: 14, width: '100%', outline: 'none' }}
+              style={{ background: 'var(--c-bg2)', border: `1px solid ${error ? '#ef4444' : 'var(--c-bd1)'}`, color: 'var(--c-tx0)', borderRadius: 10, padding: '10px 14px', fontSize: 14, width: '100%', outline: 'none' }}
               placeholder="0" />
             {error && <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{error}</p>}
           </div>
 
           {/* Motivo */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>
               Motivo (opcional)
             </label>
             <input value={reason} onChange={e => setReason(e.target.value)}
-              style={{ background: '#242429', border: '1px solid #3d3d47', color: '#e0e0ec', borderRadius: 10, padding: '10px 14px', fontSize: 14, width: '100%', outline: 'none' }}
+              style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)', color: 'var(--c-tx0)', borderRadius: 10, padding: '10px 14px', fontSize: 14, width: '100%', outline: 'none' }}
               placeholder="Ex: Compra, uso em obra, ajuste..." />
           </div>
 
           <div className="flex gap-3 pt-1">
             <button onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl text-sm" style={{ background: '#2e2e35', color: '#b8b8c8' }}>
+              className="flex-1 py-2.5 rounded-xl text-sm" style={{ background: 'var(--c-bd0)', color: 'var(--c-tx1)' }}>
               Cancelar
             </button>
             <button onClick={handleSave} disabled={saving}
@@ -228,7 +228,7 @@ const CATEGORY_COLORS = {
   'Calha': '#60a5fa', 'Portão': '#f97316', 'Grade': '#a78bfa',
   'Janela': '#34d399', 'Porta': '#fb923c', 'Rufo': '#94a3b8',
   'Estrutura Metálica': '#fbbf24', 'Esquadria': '#4ade80',
-  'Cobertura': '#38bdf8', 'Serviço': '#f472b6', 'Outros': '#8a8a9a',
+  'Cobertura': '#38bdf8', 'Serviço': '#f472b6', 'Outros': 'var(--c-tx2)',
 }
 
 const ProdutosPage = () => {
@@ -269,8 +269,8 @@ const ProdutosPage = () => {
     <div>
       <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <div>
-          <h2 className="text-xl font-bold" style={{ color: '#e0e0ec' }}>Produtos e Serviços</h2>
-          <p className="text-sm mt-0.5" style={{ color: '#8a8a9a' }}>Catálogo completo da sua serralheria</p>
+          <h2 className="text-xl font-bold" style={{ color: 'var(--c-tx0)' }}>Produtos e Serviços</h2>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--c-tx2)' }}>Catálogo completo da sua serralheria</p>
         </div>
         <button onClick={() => setModal('new')}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold flex-shrink-0"
@@ -282,16 +282,16 @@ const ProdutosPage = () => {
       {/* Filtros */}
       <div className="flex gap-3 mb-4 flex-wrap">
         <div className="flex items-center gap-3 px-4 py-3 rounded-2xl flex-1 min-w-48"
-          style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-          <Search size={16} style={{ color: '#5c5c6b', flexShrink: 0 }} />
+          style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+          <Search size={16} style={{ color: 'var(--c-tx3)', flexShrink: 0 }} />
           <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
             placeholder="Buscar produto..."
             className="flex-1 bg-transparent outline-none text-base"
-            style={{ color: '#e0e0ec' }} />
+            style={{ color: 'var(--c-tx0)' }} />
         </div>
         <select value={category} onChange={e => { setCategory(e.target.value); setPage(1) }}
           className="py-2.5 px-3 rounded-xl text-sm outline-none"
-          style={{ background: '#1a1a1f', border: '1px solid #2e2e35', color: '#e0e0ec' }}>
+          style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: 'var(--c-tx0)' }}>
           <option value="">Todas categorias</option>
           {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
@@ -300,72 +300,72 @@ const ProdutosPage = () => {
       {loading ? (
         <div className="flex justify-center h-48 items-center">
           <div className="w-8 h-8 border-4 rounded-full animate-spin"
-            style={{ borderColor: '#3d3d47', borderTopColor: '#f97316' }} />
+            style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
         </div>
       ) : products.length === 0 ? (
-        <div className="rounded-2xl text-center py-14" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-          <Package size={36} className="mx-auto mb-3" style={{ color: '#3d3d47' }} />
-          <p style={{ color: '#8a8a9a' }}>
+        <div className="rounded-2xl text-center py-14" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+          <Package size={36} className="mx-auto mb-3" style={{ color: 'var(--c-bd1)' }} />
+          <p style={{ color: 'var(--c-tx2)' }}>
             {search || category ? 'Nenhum produto encontrado' : 'Cadastre seu primeiro produto ou serviço'}
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
           {products.map((p) => {
-            const catColor = CATEGORY_COLORS[p.category] ?? '#8a8a9a'
+            const catColor = CATEGORY_COLORS[p.category] ?? 'var(--c-tx2)'
             const margin = p.cost > 0 ? (((p.price - p.cost) / p.price) * 100).toFixed(0) : null
             const lowStock = p.minStock > 0 && p.stock <= p.minStock
             return (
               <div key={p._id} className="rounded-xl p-4 flex flex-col gap-3"
-                style={{ background: '#1a1a1f', border: `1px solid ${lowStock ? 'rgba(239,68,68,0.3)' : '#2e2e35'}` }}>
+                style={{ background: 'var(--c-bg1)', border: `1px solid ${lowStock ? 'rgba(239,68,68,0.3)' : 'var(--c-bd0)'}` }}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <span className="text-xs px-2 py-0.5 rounded-full font-medium"
                       style={{ background: `${catColor}22`, color: catColor }}>
                       {p.category}
                     </span>
-                    <p className="text-sm font-semibold mt-1.5 truncate" style={{ color: '#e0e0ec' }}>{p.name}</p>
+                    <p className="text-sm font-semibold mt-1.5 truncate" style={{ color: 'var(--c-tx0)' }}>{p.name}</p>
                     {p.description && (
-                      <p className="text-xs mt-0.5 line-clamp-1" style={{ color: '#5c5c6b' }}>{p.description}</p>
+                      <p className="text-xs mt-0.5 line-clamp-1" style={{ color: 'var(--c-tx3)' }}>{p.description}</p>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <p className="text-lg font-bold" style={{ color: '#f97316' }}>{fmt(p.price)}</p>
-                    <p className="text-xs" style={{ color: '#5c5c6b' }}>
+                    <p className="text-xs" style={{ color: 'var(--c-tx3)' }}>
                       por {p.unit}
                       {margin && <span style={{ color: '#22c55e' }}> · {margin}% margem</span>}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium" style={{ color: lowStock ? '#ef4444' : '#8a8a9a' }}>
+                    <p className="text-sm font-medium" style={{ color: lowStock ? '#ef4444' : 'var(--c-tx2)' }}>
                       {p.stock} {p.unit}
                     </p>
-                    <p className="text-xs" style={{ color: '#5c5c6b' }}>em estoque</p>
+                    <p className="text-xs" style={{ color: 'var(--c-tx3)' }}>em estoque</p>
                   </div>
                 </div>
-                <div className="flex gap-2 pt-1" style={{ borderTop: '1px solid #2e2e35' }}>
+                <div className="flex gap-2 pt-1" style={{ borderTop: '1px solid var(--c-bd0)' }}>
                   <button onClick={() => setModal(p)}
                     className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs"
-                    style={{ background: '#242429', color: '#8a8a9a' }}
+                    style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }}
                     onMouseEnter={e => e.currentTarget.style.color = '#f97316'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#8a8a9a'}>
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--c-tx2)'}>
                     <Pencil size={12} /> Editar
                   </button>
                   <button onClick={() => setStockModal(p)}
                     className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
-                    style={{ background: '#242429', color: '#8a8a9a' }}
+                    style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }}
                     title="Ajustar estoque"
                     onMouseEnter={e => e.currentTarget.style.color = '#22c55e'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#8a8a9a'}>
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--c-tx2)'}>
                     <ArrowUpDown size={12} />
                   </button>
                   <button onClick={() => handleDelete(p)}
                     className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
-                    style={{ background: '#242429', color: '#8a8a9a' }}
+                    style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }}
                     onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                    onMouseLeave={e => e.currentTarget.style.color = '#8a8a9a'}>
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--c-tx2)'}>
                     <Trash2 size={12} />
                   </button>
                 </div>
@@ -380,7 +380,7 @@ const ProdutosPage = () => {
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
             <button key={p} onClick={() => setPage(p)}
               className="w-8 h-8 rounded-lg text-sm"
-              style={{ background: p === page ? '#f97316' : '#1a1a1f', color: p === page ? 'white' : '#8a8a9a' }}>
+              style={{ background: p === page ? '#f97316' : 'var(--c-bg1)', color: p === page ? 'white' : 'var(--c-tx2)' }}>
               {p}
             </button>
           ))}

@@ -47,7 +47,7 @@ const LoginPage = () => {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: 'linear-gradient(135deg, #0d0d0f 0%, #111114 50%, #1a1a1f 100%)' }}
+      style={{ background: 'linear-gradient(135deg, #0d0d0f 0%, var(--c-bg0) 50%, var(--c-bg1) 100%)' }}
     >
       {/* Textura de fundo — parafusos industriais */}
       <div
@@ -67,10 +67,10 @@ const LoginPage = () => {
               <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
             </svg>
           </div>
-          <h1 className="text-2xl font-bold" style={{ color: '#e0e0ec' }}>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--c-tx0)' }}>
             4u <span style={{ color: '#f97316' }}>Serralheiro</span>
           </h1>
-          <p className="mt-1 text-sm" style={{ color: '#8a8a9a' }}>
+          <p className="mt-1 text-sm" style={{ color: 'var(--c-tx2)' }}>
             Sistema de gestão para serralherias
           </p>
         </div>
@@ -78,16 +78,16 @@ const LoginPage = () => {
         {/* Card de login */}
         <div
           className="rounded-2xl p-6"
-          style={{ background: '#1a1a1f', border: '1px solid #2e2e35', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}
+          style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}
         >
-          <h2 className="text-lg font-semibold mb-5" style={{ color: '#e0e0ec' }}>
+          <h2 className="text-lg font-semibold mb-5" style={{ color: 'var(--c-tx0)' }}>
             Entrar na sua conta
           </h2>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" autoComplete="off">
             {/* Campo E-mail */}
             <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: '#b8b8c8' }}>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--c-tx1)' }}>
                 E-mail
               </label>
               <input
@@ -97,12 +97,12 @@ const LoginPage = () => {
                 placeholder="seu@email.com"
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
                 style={{
-                  background: '#242429',
-                  border: `1px solid ${errors.email ? '#ef4444' : '#3d3d47'}`,
-                  color: '#e0e0ec',
+                  background: 'var(--c-bg2)',
+                  border: `1px solid ${errors.email ? '#ef4444' : 'var(--c-bd1)'}`,
+                  color: 'var(--c-tx0)',
                 }}
                 onFocus={(e) => { if (!errors.email) e.target.style.borderColor = '#f97316' }}
-                onBlur={(e) => { if (!errors.email) e.target.style.borderColor = '#3d3d47' }}
+                onBlur={(e) => { if (!errors.email) e.target.style.borderColor = 'var(--c-bd1)' }}
               />
               {errors.email && (
                 <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{errors.email.message}</p>
@@ -111,7 +111,7 @@ const LoginPage = () => {
 
             {/* Campo Senha */}
             <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: '#b8b8c8' }}>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--c-tx1)' }}>
                 Senha
               </label>
               <input
@@ -121,12 +121,12 @@ const LoginPage = () => {
                 placeholder="••••••••"
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
                 style={{
-                  background: '#242429',
-                  border: `1px solid ${errors.password ? '#ef4444' : '#3d3d47'}`,
-                  color: '#e0e0ec',
+                  background: 'var(--c-bg2)',
+                  border: `1px solid ${errors.password ? '#ef4444' : 'var(--c-bd1)'}`,
+                  color: 'var(--c-tx0)',
                 }}
                 onFocus={(e) => { if (!errors.password) e.target.style.borderColor = '#f97316' }}
-                onBlur={(e) => { if (!errors.password) e.target.style.borderColor = '#3d3d47' }}
+                onBlur={(e) => { if (!errors.password) e.target.style.borderColor = 'var(--c-bd1)' }}
               />
               {errors.password && (
                 <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{errors.password.message}</p>
@@ -167,7 +167,7 @@ const LoginPage = () => {
           </form>
         </div>
 
-        <p className="text-center mt-6 text-xs" style={{ color: '#5c5c6b' }}>
+        <p className="text-center mt-6 text-xs" style={{ color: 'var(--c-tx3)' }}>
           © 2025 4u Serralheiro · Todos os direitos reservados
         </p>
       </div>

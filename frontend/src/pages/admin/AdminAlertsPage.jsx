@@ -38,17 +38,17 @@ const ExtendModal = ({ company, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
-      <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
+      <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold" style={{ color: '#e0e0ec' }}>Estender Plano</h3>
+          <h3 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>Estender Plano</h3>
         </div>
-        <p className="text-sm mb-4" style={{ color: '#8a8a9a' }}>
-          Empresa: <strong style={{ color: '#e0e0ec' }}>{company.name}</strong><br />
-          Vence em: <strong style={{ color: '#e0e0ec' }}>{fmtDate(company.planExpiresAt)}</strong>
+        <p className="text-sm mb-4" style={{ color: 'var(--c-tx2)' }}>
+          Empresa: <strong style={{ color: 'var(--c-tx0)' }}>{company.name}</strong><br />
+          Vence em: <strong style={{ color: 'var(--c-tx0)' }}>{fmtDate(company.planExpiresAt)}</strong>
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>Quantos meses adicionar?</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Quantos meses adicionar?</label>
             <input
               type="number"
               min="1"
@@ -56,13 +56,13 @@ const ExtendModal = ({ company, onClose, onSuccess }) => {
               value={months}
               onChange={e => setMonths(e.target.value)}
               placeholder="Ex: 3"
-              style={{ background: '#242429', border: '1px solid #3d3d47', color: '#e0e0ec', borderRadius: 12, padding: '10px 14px', fontSize: 14, width: '100%', outline: 'none' }}
+              style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)', color: 'var(--c-tx0)', borderRadius: 12, padding: '10px 14px', fontSize: 14, width: '100%', outline: 'none' }}
             />
           </div>
           <div className="flex gap-3">
             <button type="button" onClick={onClose}
               className="flex-1 py-2.5 rounded-xl text-sm"
-              style={{ background: '#2e2e35', color: '#b8b8c8' }}>
+              style={{ background: 'var(--c-bd0)', color: 'var(--c-tx1)' }}>
               Cancelar
             </button>
             <button type="submit" disabled={saving}
@@ -79,7 +79,7 @@ const ExtendModal = ({ company, onClose, onSuccess }) => {
 
 // ─── Seção de alertas ───
 const AlertSection = ({ title, icon: Icon, color, companies, emptyText, labelFn, onExtend }) => (
-  <div className="rounded-2xl overflow-hidden" style={{ background: '#1a1a1f', border: `1px solid ${color}33` }}>
+  <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-bg1)', border: `1px solid ${color}33` }}>
     {/* Header da seção */}
     <div className="flex items-center gap-3 px-5 py-4" style={{ background: `${color}10`, borderBottom: `1px solid ${color}22` }}>
       <Icon size={18} style={{ color, flexShrink: 0 }} />
@@ -93,16 +93,16 @@ const AlertSection = ({ title, icon: Icon, color, companies, emptyText, labelFn,
     {/* Lista */}
     {companies.length === 0 ? (
       <div className="px-5 py-6 text-center">
-        <CheckCircle size={24} className="mx-auto mb-2" style={{ color: '#3d3d47' }} />
-        <p className="text-sm" style={{ color: '#5c5c6b' }}>{emptyText}</p>
+        <CheckCircle size={24} className="mx-auto mb-2" style={{ color: 'var(--c-bd1)' }} />
+        <p className="text-sm" style={{ color: 'var(--c-tx3)' }}>{emptyText}</p>
       </div>
     ) : (
-      <div className="divide-y" style={{ borderColor: '#2e2e35' }}>
+      <div className="divide-y" style={{ borderColor: 'var(--c-bd0)' }}>
         {companies.map(c => (
           <div key={c._id} className="flex items-center gap-3 px-5 py-3.5">
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate" style={{ color: '#e0e0ec' }}>{c.name}</p>
-              <p className="text-xs truncate" style={{ color: '#5c5c6b' }}>
+              <p className="text-sm font-medium truncate" style={{ color: 'var(--c-tx0)' }}>{c.name}</p>
+              <p className="text-xs truncate" style={{ color: 'var(--c-tx3)' }}>
                 {c.plan?.name ?? '—'} · {c.email}
               </p>
             </div>
@@ -110,7 +110,7 @@ const AlertSection = ({ title, icon: Icon, color, companies, emptyText, labelFn,
               <p className="text-xs font-semibold" style={{ color }}>
                 {labelFn(c)}
               </p>
-              <p className="text-xs" style={{ color: '#5c5c6b' }}>{fmtDate(c.planExpiresAt)}</p>
+              <p className="text-xs" style={{ color: 'var(--c-tx3)' }}>{fmtDate(c.planExpiresAt)}</p>
             </div>
             <button
               onClick={() => onExtend(c)}
@@ -151,7 +151,7 @@ const AdminAlertsPage = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 border-4 rounded-full animate-spin"
-          style={{ borderColor: '#3d3d47', borderTopColor: '#f97316' }} />
+          style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
       </div>
     )
   }
@@ -163,14 +163,14 @@ const AdminAlertsPage = () => {
     <div>
       <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <div>
-          <h2 className="text-xl font-bold" style={{ color: '#e0e0ec' }}>Alertas de Vencimento</h2>
-          <p className="text-sm mt-0.5" style={{ color: '#8a8a9a' }}>
+          <h2 className="text-xl font-bold" style={{ color: 'var(--c-tx0)' }}>Alertas de Vencimento</h2>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--c-tx2)' }}>
             {total > 0 ? `${total} empresa${total > 1 ? 's' : ''} requer${total === 1 ? ' atenção' : 'em atenção'}` : 'Tudo em dia'}
           </p>
         </div>
         <button onClick={fetchAlerts}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium"
-          style={{ background: '#1a1a1f', border: '1px solid #2e2e35', color: '#b8b8c8' }}>
+          style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: 'var(--c-tx1)' }}>
           <RefreshCw size={15} /> Atualizar
         </button>
       </div>

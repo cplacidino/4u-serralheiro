@@ -22,9 +22,9 @@ const monthLabel = (y, m) => {
 const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
 
 const inputCls = (err) => ({
-  background: '#242429',
-  border: `1px solid ${err ? '#ef4444' : '#3d3d47'}`,
-  color: '#e0e0ec',
+  background: 'var(--c-bg2)',
+  border: `1px solid ${err ? '#ef4444' : 'var(--c-bd1)'}`,
+  color: 'var(--c-tx0)',
   borderRadius: 10,
   padding: '10px 14px',
   fontSize: 14,
@@ -34,7 +34,7 @@ const inputCls = (err) => ({
 
 const Field = ({ label, error, children }) => (
   <div>
-    <label className="block text-sm font-medium mb-1.5" style={{ color: '#b8b8c8' }}>{label}</label>
+    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>{label}</label>
     {children}
     {error && <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{error}</p>}
   </div>
@@ -42,16 +42,16 @@ const Field = ({ label, error, children }) => (
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
 const KpiCard = ({ title, value, icon: Icon, color, subtitle }) => (
-  <div className="rounded-2xl p-5" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
+  <div className="rounded-2xl p-5" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
     <div className="flex items-center justify-between mb-3">
-      <p className="text-xs font-medium uppercase tracking-wide" style={{ color: '#8a8a9a' }}>{title}</p>
+      <p className="text-xs font-medium uppercase tracking-wide" style={{ color: 'var(--c-tx2)' }}>{title}</p>
       <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
         style={{ background: `${color}22` }}>
         <Icon size={20} style={{ color }} />
       </div>
     </div>
     <p className="text-2xl font-bold" style={{ color }}>{value}</p>
-    {subtitle && <p className="text-xs mt-1" style={{ color: '#5c5c6b' }}>{subtitle}</p>}
+    {subtitle && <p className="text-xs mt-1" style={{ color: 'var(--c-tx3)' }}>{subtitle}</p>}
   </div>
 )
 
@@ -129,12 +129,12 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
-      <div className="w-full max-w-md rounded-2xl flex flex-col" style={{ background: '#1a1a1f', border: '1px solid #2e2e35', maxHeight: '90vh' }}>
-        <div className="flex items-center justify-between p-6" style={{ borderBottom: '1px solid #2e2e35' }}>
-          <h2 className="text-lg font-bold" style={{ color: '#e0e0ec' }}>
+      <div className="w-full max-w-md rounded-2xl flex flex-col" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', maxHeight: '90vh' }}>
+        <div className="flex items-center justify-between p-6" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+          <h2 className="text-lg font-bold" style={{ color: 'var(--c-tx0)' }}>
             {isEdit ? 'Editar Lançamento' : 'Novo Lançamento'}
           </h2>
-          <button onClick={onClose} className="p-2 rounded-xl" style={{ color: '#5c5c6b', background: '#242429' }}>
+          <button onClick={onClose} className="p-2 rounded-xl" style={{ color: 'var(--c-tx3)', background: 'var(--c-bg2)' }}>
             <X size={18} />
           </button>
         </div>
@@ -148,10 +148,10 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
                 style={{
                   background: type === t
                     ? (t === 'receita' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)')
-                    : '#242429',
+                    : 'var(--c-bg2)',
                   color: type === t
                     ? (t === 'receita' ? '#22c55e' : '#ef4444')
-                    : '#5c5c6b',
+                    : 'var(--c-tx3)',
                   border: `2px solid ${type === t ? (t === 'receita' ? '#22c55e' : '#ef4444') : 'transparent'}`,
                 }}>
                 {t === 'receita' ? '↑ Receita' : '↓ Despesa'}
@@ -201,11 +201,11 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
             <div className="flex items-center gap-3 py-2">
               <button onClick={() => setRecorrente(v => !v)}
                 className="w-11 h-6 rounded-full transition-all flex-shrink-0 relative"
-                style={{ background: recorrente ? '#f97316' : '#3d3d47' }}>
+                style={{ background: recorrente ? '#f97316' : 'var(--c-bd1)' }}>
                 <span className="absolute top-1 w-4 h-4 rounded-full bg-white transition-all"
                   style={{ left: recorrente ? '24px' : '4px' }} />
               </button>
-              <span className="text-sm" style={{ color: '#b8b8c8' }}>Repetir todo mês automaticamente</span>
+              <span className="text-sm" style={{ color: 'var(--c-tx1)' }}>Repetir todo mês automaticamente</span>
             </div>
           )}
 
@@ -224,12 +224,12 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
                   <button
                     onClick={() => setAgendarPagar(v => !v)}
                     className="w-11 h-6 rounded-full transition-all flex-shrink-0 relative"
-                    style={{ background: agendarPagar ? '#f97316' : '#3d3d47' }}
+                    style={{ background: agendarPagar ? '#f97316' : 'var(--c-bd1)' }}
                   >
                     <span className="absolute top-1 w-4 h-4 rounded-full bg-white transition-all"
                       style={{ left: agendarPagar ? '24px' : '4px' }} />
                   </button>
-                  <span className="text-sm" style={{ color: '#b8b8c8' }}>Agendar para pagar depois</span>
+                  <span className="text-sm" style={{ color: 'var(--c-tx1)' }}>Agendar para pagar depois</span>
                 </div>
               )}
 
@@ -255,9 +255,9 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
           )}
         </div>
 
-        <div className="flex gap-3 p-6" style={{ borderTop: '1px solid #2e2e35' }}>
+        <div className="flex gap-3 p-6" style={{ borderTop: '1px solid var(--c-bd0)' }}>
           <button onClick={onClose} className="flex-1 py-3 rounded-xl text-sm font-medium"
-            style={{ background: '#242429', color: '#b8b8c8' }}>
+            style={{ background: 'var(--c-bg2)', color: 'var(--c-tx1)' }}>
             Cancelar
           </button>
           <button onClick={handleSave} disabled={saving}
@@ -280,15 +280,15 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
 const PainelAReceber = ({ fiados, totalPendente, onReceive }) => {
   const todayDate = today()
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-      <div className="px-5 py-4" style={{ borderBottom: '1px solid #2e2e35' }}>
-        <h3 className="text-base font-bold" style={{ color: '#e0e0ec' }}>A Receber</h3>
-        <p className="text-xs mt-0.5" style={{ color: '#5c5c6b' }}>Fiados e pagamentos em aberto</p>
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+      <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+        <h3 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>A Receber</h3>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>Fiados e pagamentos em aberto</p>
       </div>
       {fiados.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 gap-2">
-          <CheckCircle2 size={36} style={{ color: '#2e2e35' }} />
-          <p className="text-sm" style={{ color: '#8a8a9a' }}>Nenhum valor a receber</p>
+          <CheckCircle2 size={36} style={{ color: 'var(--c-bd0)' }} />
+          <p className="text-sm" style={{ color: 'var(--c-tx2)' }}>Nenhum valor a receber</p>
         </div>
       ) : (
         <div>
@@ -298,10 +298,10 @@ const PainelAReceber = ({ fiados, totalPendente, onReceive }) => {
               <div key={f._id} className="px-5 py-4 flex items-center gap-3"
                 style={{ borderBottom: '1px solid #1f1f24' }}>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: '#e0e0ec' }}>
+                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--c-tx0)' }}>
                     {f.clientName || f.client?.name || 'Cliente'}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: '#5c5c6b' }}>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>
                     {f.budgetNumber ? `ORC-${String(f.budgetNumber).padStart(3,'0')}` : ''}
                     {f.dueDate ? ` · Venc. ${fmtDate(f.dueDate)}` : ''}
                   </p>
@@ -325,8 +325,8 @@ const PainelAReceber = ({ fiados, totalPendente, onReceive }) => {
             )
           })}
           <div className="px-5 py-3 flex items-center justify-between"
-            style={{ borderTop: '1px solid #2e2e35', background: '#242429' }}>
-            <span className="text-xs font-medium" style={{ color: '#8a8a9a' }}>Total pendente</span>
+            style={{ borderTop: '1px solid var(--c-bd0)', background: 'var(--c-bg2)' }}>
+            <span className="text-xs font-medium" style={{ color: 'var(--c-tx2)' }}>Total pendente</span>
             <span className="text-sm font-bold" style={{ color: '#eab308' }}>{fmt(totalPendente)}</span>
           </div>
         </div>
@@ -340,15 +340,15 @@ const PainelAPagar = ({ expenses, totalDue, onPay }) => {
   const todayDate = today()
   const todayStr = todayDate.toDateString()
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-      <div className="px-5 py-4" style={{ borderBottom: '1px solid #2e2e35' }}>
-        <h3 className="text-base font-bold" style={{ color: '#e0e0ec' }}>A Pagar</h3>
-        <p className="text-xs mt-0.5" style={{ color: '#5c5c6b' }}>Despesas agendadas e vencidas</p>
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+      <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+        <h3 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>A Pagar</h3>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>Despesas agendadas e vencidas</p>
       </div>
       {expenses.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 gap-2">
-          <CheckCircle2 size={36} style={{ color: '#2e2e35' }} />
-          <p className="text-sm" style={{ color: '#8a8a9a' }}>Nenhuma despesa pendente</p>
+          <CheckCircle2 size={36} style={{ color: 'var(--c-bd0)' }} />
+          <p className="text-sm" style={{ color: 'var(--c-tx2)' }}>Nenhuma despesa pendente</p>
         </div>
       ) : (
         <div>
@@ -360,16 +360,16 @@ const PainelAPagar = ({ expenses, totalDue, onPay }) => {
               <div key={e._id} className="px-5 py-4 flex items-center gap-3"
                 style={{ borderBottom: '1px solid #1f1f24' }}>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: '#e0e0ec' }}>
+                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--c-tx0)' }}>
                     {e.description}
                   </p>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <span className="text-xs px-2 py-0.5 rounded-full"
-                      style={{ background: '#242429', color: '#8a8a9a' }}>
+                      style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }}>
                       {e.category}
                     </span>
                     {due && (
-                      <span className="text-xs" style={{ color: '#5c5c6b' }}>
+                      <span className="text-xs" style={{ color: 'var(--c-tx3)' }}>
                         Venc. {fmtDate(due)}
                       </span>
                     )}
@@ -400,8 +400,8 @@ const PainelAPagar = ({ expenses, totalDue, onPay }) => {
             )
           })}
           <div className="px-5 py-3 flex items-center justify-between"
-            style={{ borderTop: '1px solid #2e2e35', background: '#242429' }}>
-            <span className="text-xs font-medium" style={{ color: '#8a8a9a' }}>Total a pagar</span>
+            style={{ borderTop: '1px solid var(--c-bd0)', background: 'var(--c-bg2)' }}>
+            <span className="text-xs font-medium" style={{ color: 'var(--c-tx2)' }}>Total a pagar</span>
             <span className="text-sm font-bold" style={{ color: '#ef4444' }}>{fmt(totalDue)}</span>
           </div>
         </div>
@@ -576,25 +576,25 @@ const FinanceiroPage = () => {
       {/* ── Cabeçalho ── */}
       <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: '#e0e0ec' }}>Financeiro</h1>
-          <p className="text-base mt-1" style={{ color: '#8a8a9a' }}>Receitas e despesas do negócio</p>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--c-tx0)' }}>Financeiro</h1>
+          <p className="text-base mt-1" style={{ color: 'var(--c-tx2)' }}>Receitas e despesas do negócio</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl"
-            style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-            <button onClick={prevMonth} className="p-1 rounded-lg" style={{ color: '#8a8a9a' }}>
+            style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+            <button onClick={prevMonth} className="p-1 rounded-lg" style={{ color: 'var(--c-tx2)' }}>
               <ChevronLeft size={18} />
             </button>
-            <span className="text-sm font-semibold capitalize min-w-36 text-center" style={{ color: '#e0e0ec' }}>
+            <span className="text-sm font-semibold capitalize min-w-36 text-center" style={{ color: 'var(--c-tx0)' }}>
               {monthLabel(year, month)}
             </span>
-            <button onClick={nextMonth} className="p-1 rounded-lg" style={{ color: '#8a8a9a' }}>
+            <button onClick={nextMonth} className="p-1 rounded-lg" style={{ color: 'var(--c-tx2)' }}>
               <ChevronRight size={18} />
             </button>
           </div>
           <button onClick={exportCSV}
             className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-medium"
-            style={{ background: '#1a1a1f', border: '1px solid #2e2e35', color: '#8a8a9a' }}
+            style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: 'var(--c-tx2)' }}
             title="Exportar CSV do mês">
             <Download size={16} /> CSV
           </button>
@@ -654,17 +654,17 @@ const FinanceiroPage = () => {
 
       {/* ── Evolução Mensal ── */}
       {monthlyChart.length > 0 && (
-        <div className="rounded-2xl p-6 mb-8" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-          <h3 className="text-base font-bold mb-5" style={{ color: '#e0e0ec' }}>Evolução Mensal</h3>
+        <div className="rounded-2xl p-6 mb-8" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+          <h3 className="text-base font-bold mb-5" style={{ color: 'var(--c-tx0)' }}>Evolução Mensal</h3>
 
           {/* Tabela desktop */}
           <table className="hidden md:table w-full text-sm">
             <thead>
-              <tr style={{ borderBottom: '1px solid #2e2e35' }}>
-                <th className="text-left pb-3 font-medium" style={{ color: '#5c5c6b' }}>Mês</th>
-                <th className="text-right pb-3 font-medium" style={{ color: '#5c5c6b' }}>Receita</th>
-                <th className="text-right pb-3 font-medium" style={{ color: '#5c5c6b' }}>Despesa</th>
-                <th className="text-right pb-3 font-medium" style={{ color: '#5c5c6b' }}>Saldo</th>
+              <tr style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+                <th className="text-left pb-3 font-medium" style={{ color: 'var(--c-tx3)' }}>Mês</th>
+                <th className="text-right pb-3 font-medium" style={{ color: 'var(--c-tx3)' }}>Receita</th>
+                <th className="text-right pb-3 font-medium" style={{ color: 'var(--c-tx3)' }}>Despesa</th>
+                <th className="text-right pb-3 font-medium" style={{ color: 'var(--c-tx3)' }}>Saldo</th>
               </tr>
             </thead>
             <tbody>
@@ -672,7 +672,7 @@ const FinanceiroPage = () => {
                 const s = row.receita - row.despesa
                 return (
                   <tr key={`${row.year}-${row.month}`} style={{ borderBottom: '1px solid #1f1f24' }}>
-                    <td className="py-3 capitalize" style={{ color: '#b8b8c8' }}>
+                    <td className="py-3 capitalize" style={{ color: 'var(--c-tx1)' }}>
                       {MONTH_NAMES[row.month - 1]}/{row.year}
                     </td>
                     <td className="py-3 text-right font-semibold" style={{ color: '#22c55e' }}>{fmt(row.receita)}</td>
@@ -690,21 +690,21 @@ const FinanceiroPage = () => {
               const s = row.receita - row.despesa
               return (
                 <div key={`${row.year}-${row.month}`} className="rounded-xl p-4"
-                  style={{ background: '#242429' }}>
-                  <p className="text-sm font-semibold mb-2" style={{ color: '#e0e0ec' }}>
+                  style={{ background: 'var(--c-bg2)' }}>
+                  <p className="text-sm font-semibold mb-2" style={{ color: 'var(--c-tx0)' }}>
                     {MONTH_NAMES[row.month - 1]}/{row.year}
                   </p>
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div>
-                      <p style={{ color: '#5c5c6b' }}>Receita</p>
+                      <p style={{ color: 'var(--c-tx3)' }}>Receita</p>
                       <p className="font-semibold" style={{ color: '#22c55e' }}>{fmt(row.receita)}</p>
                     </div>
                     <div>
-                      <p style={{ color: '#5c5c6b' }}>Despesa</p>
+                      <p style={{ color: 'var(--c-tx3)' }}>Despesa</p>
                       <p className="font-semibold" style={{ color: '#ef4444' }}>{fmt(row.despesa)}</p>
                     </div>
                     <div>
-                      <p style={{ color: '#5c5c6b' }}>Saldo</p>
+                      <p style={{ color: 'var(--c-tx3)' }}>Saldo</p>
                       <p className="font-bold" style={{ color: s >= 0 ? '#f97316' : '#ef4444' }}>{fmt(s)}</p>
                     </div>
                   </div>
@@ -725,16 +725,16 @@ const FinanceiroPage = () => {
       {summary && (summary.byCategory.receita.length > 0 || summary.byCategory.despesa.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
           {summary.byCategory.receita.length > 0 && (
-            <div className="rounded-2xl p-6" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-              <h3 className="text-base font-bold mb-4" style={{ color: '#e0e0ec' }}>Receitas por Categoria</h3>
+            <div className="rounded-2xl p-6" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+              <h3 className="text-base font-bold mb-4" style={{ color: 'var(--c-tx0)' }}>Receitas por Categoria</h3>
               <div className="space-y-3">
                 {summary.byCategory.receita.map(({ category, total }) => (
                   <div key={category}>
                     <div className="flex justify-between text-sm mb-1">
-                      <span style={{ color: '#b8b8c8' }}>{category}</span>
+                      <span style={{ color: 'var(--c-tx1)' }}>{category}</span>
                       <span className="font-semibold" style={{ color: '#22c55e' }}>{fmt(total)}</span>
                     </div>
-                    <div className="h-2 rounded-full" style={{ background: '#242429' }}>
+                    <div className="h-2 rounded-full" style={{ background: 'var(--c-bg2)' }}>
                       <div className="h-2 rounded-full" style={{
                         width: `${Math.min(100, (total / summary.totalReceitas) * 100)}%`,
                         background: '#22c55e',
@@ -747,16 +747,16 @@ const FinanceiroPage = () => {
           )}
 
           {summary.byCategory.despesa.length > 0 && (
-            <div className="rounded-2xl p-6" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-              <h3 className="text-base font-bold mb-4" style={{ color: '#e0e0ec' }}>Despesas por Categoria</h3>
+            <div className="rounded-2xl p-6" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+              <h3 className="text-base font-bold mb-4" style={{ color: 'var(--c-tx0)' }}>Despesas por Categoria</h3>
               <div className="space-y-3">
                 {summary.byCategory.despesa.map(({ category, total }) => (
                   <div key={category}>
                     <div className="flex justify-between text-sm mb-1">
-                      <span style={{ color: '#b8b8c8' }}>{category}</span>
+                      <span style={{ color: 'var(--c-tx1)' }}>{category}</span>
                       <span className="font-semibold" style={{ color: '#ef4444' }}>{fmt(total)}</span>
                     </div>
-                    <div className="h-2 rounded-full" style={{ background: '#242429' }}>
+                    <div className="h-2 rounded-full" style={{ background: 'var(--c-bg2)' }}>
                       <div className="h-2 rounded-full" style={{
                         width: `${Math.min(100, (total / summary.totalDespesas) * 100)}%`,
                         background: '#ef4444',
@@ -771,10 +771,10 @@ const FinanceiroPage = () => {
       )}
 
       {/* ── Lista de lançamentos ── */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
         {/* Filtros */}
-        <div className="flex items-center gap-3 p-5 flex-wrap" style={{ borderBottom: '1px solid #2e2e35' }}>
-          <h3 className="text-base font-bold flex-1" style={{ color: '#e0e0ec' }}>Lançamentos</h3>
+        <div className="flex items-center gap-3 p-5 flex-wrap" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+          <h3 className="text-base font-bold flex-1" style={{ color: 'var(--c-tx0)' }}>Lançamentos</h3>
           {[
             { key: '', label: 'Todos' },
             { key: 'receita', label: 'Receitas' },
@@ -784,8 +784,8 @@ const FinanceiroPage = () => {
               onClick={() => { setTypeFilter(key); setPendingFilter(false); setPage(1) }}
               className="px-4 py-2 rounded-xl text-sm font-medium"
               style={{
-                background: typeFilter === key && !pendingFilter ? 'rgba(249,115,22,0.15)' : '#242429',
-                color: typeFilter === key && !pendingFilter ? '#f97316' : '#8a8a9a',
+                background: typeFilter === key && !pendingFilter ? 'rgba(249,115,22,0.15)' : 'var(--c-bg2)',
+                color: typeFilter === key && !pendingFilter ? '#f97316' : 'var(--c-tx2)',
               }}>
               {label}
             </button>
@@ -794,21 +794,21 @@ const FinanceiroPage = () => {
             onClick={() => { setPendingFilter(v => !v); setTypeFilter(''); setPage(1) }}
             className="px-4 py-2 rounded-xl text-sm font-medium"
             style={{
-              background: pendingFilter ? 'rgba(234,179,8,0.15)' : '#242429',
-              color: pendingFilter ? '#eab308' : '#8a8a9a',
+              background: pendingFilter ? 'rgba(234,179,8,0.15)' : 'var(--c-bg2)',
+              color: pendingFilter ? '#eab308' : 'var(--c-tx2)',
             }}>
             Pendentes
           </button>
           {/* Filtro por período */}
-          <div className="flex items-center gap-2 flex-wrap w-full pt-1" style={{ borderTop: '1px solid #2e2e35' }}>
-            <span className="text-xs font-medium" style={{ color: '#5c5c6b' }}>Período:</span>
+          <div className="flex items-center gap-2 flex-wrap w-full pt-1" style={{ borderTop: '1px solid var(--c-bd0)' }}>
+            <span className="text-xs font-medium" style={{ color: 'var(--c-tx3)' }}>Período:</span>
             <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(1) }}
               className="py-1.5 px-3 rounded-xl text-xs outline-none"
-              style={{ background: '#242429', border: '1px solid #3d3d47', color: dateFrom ? '#e0e0ec' : '#5c5c6b' }} />
-            <span className="text-xs" style={{ color: '#5c5c6b' }}>até</span>
+              style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)', color: dateFrom ? 'var(--c-tx0)' : 'var(--c-tx3)' }} />
+            <span className="text-xs" style={{ color: 'var(--c-tx3)' }}>até</span>
             <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(1) }}
               className="py-1.5 px-3 rounded-xl text-xs outline-none"
-              style={{ background: '#242429', border: '1px solid #3d3d47', color: dateTo ? '#e0e0ec' : '#5c5c6b' }} />
+              style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)', color: dateTo ? 'var(--c-tx0)' : 'var(--c-tx3)' }} />
             {(dateFrom || dateTo) && (
               <button onClick={() => { setDateFrom(''); setDateTo(''); setPage(1) }}
                 className="text-xs px-3 py-1.5 rounded-xl"
@@ -827,19 +827,19 @@ const FinanceiroPage = () => {
         {loading ? (
           <div className="flex items-center justify-center h-40">
             <div className="w-8 h-8 border-4 rounded-full animate-spin"
-              style={{ borderColor: '#3d3d47', borderTopColor: '#f97316' }} />
+              style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
           </div>
         ) : transactions.length === 0 ? (
           <div className="text-center py-16">
-            <Wallet size={40} className="mx-auto mb-3" style={{ color: '#2e2e35' }} />
-            <p className="text-base" style={{ color: '#8a8a9a' }}>Nenhum lançamento encontrado</p>
+            <Wallet size={40} className="mx-auto mb-3" style={{ color: 'var(--c-bd0)' }} />
+            <p className="text-base" style={{ color: 'var(--c-tx2)' }}>Nenhum lançamento encontrado</p>
           </div>
         ) : (
           <div>
             {transactions.map(tx => (
               <div key={tx._id} className="flex items-center gap-4 px-5 py-4"
-                style={{ borderBottom: '1px solid #2e2e35' }}
-                onMouseEnter={e => e.currentTarget.style.background = '#242429'}
+                style={{ borderBottom: '1px solid var(--c-bd0)' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--c-bg2)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
 
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -852,13 +852,13 @@ const FinanceiroPage = () => {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className="text-base font-semibold truncate" style={{ color: '#e0e0ec' }}>
+                  <p className="text-base font-semibold truncate" style={{ color: 'var(--c-tx0)' }}>
                     {tx.description}
                   </p>
-                  <p className="text-sm mt-0.5" style={{ color: '#5c5c6b' }}>
+                  <p className="text-sm mt-0.5" style={{ color: 'var(--c-tx3)' }}>
                     {tx.category} · {fmtDate(tx.date)}
                     {tx.budget && <span style={{ color: '#f97316' }}> · ORC-{String(tx.budget.number).padStart(3, '0')}</span>}
-                    {tx.supplier && <span style={{ color: '#5c5c6b' }}> · {tx.supplier}</span>}
+                    {tx.supplier && <span style={{ color: 'var(--c-tx3)' }}> · {tx.supplier}</span>}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     {tx.recorrente && (
@@ -869,7 +869,7 @@ const FinanceiroPage = () => {
                     )}
                     {tx.recorrenciaId && (
                       <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                        style={{ background: '#242429', color: '#8a8a9a' }}>
+                        style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }}>
                         ↺ Automático
                       </span>
                     )}
@@ -891,7 +891,7 @@ const FinanceiroPage = () => {
 
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button onClick={() => setEditTx(tx)} className="p-2 rounded-lg"
-                    style={{ background: '#242429', color: '#8a8a9a' }}>
+                    style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }}>
                     <Pencil size={15} />
                   </button>
                   <button onClick={() => handleDelete(tx._id)} className="p-2 rounded-lg"
@@ -906,15 +906,15 @@ const FinanceiroPage = () => {
               <div className="flex items-center justify-center gap-4 p-4">
                 <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
                   className="p-2 rounded-xl"
-                  style={{ background: '#242429', color: page === 1 ? '#3d3d47' : '#e0e0ec' }}>
+                  style={{ background: 'var(--c-bg2)', color: page === 1 ? 'var(--c-bd1)' : 'var(--c-tx0)' }}>
                   <ChevronLeft size={16} />
                 </button>
-                <span className="text-sm" style={{ color: '#8a8a9a' }}>
+                <span className="text-sm" style={{ color: 'var(--c-tx2)' }}>
                   Página {page} de {totalPages}
                 </span>
                 <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
                   className="p-2 rounded-xl"
-                  style={{ background: '#242429', color: page === totalPages ? '#3d3d47' : '#e0e0ec' }}>
+                  style={{ background: 'var(--c-bg2)', color: page === totalPages ? 'var(--c-bd1)' : 'var(--c-tx0)' }}>
                   <ChevronRight size={16} />
                 </button>
               </div>
