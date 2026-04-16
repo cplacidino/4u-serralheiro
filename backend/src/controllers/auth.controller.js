@@ -52,6 +52,10 @@ const login = async (req, res) => {
 
       const plan = company.plan;
 
+      if (!plan) {
+        return sendError(res, 'Plano da empresa não encontrado. Entre em contato com o administrador.', 403);
+      }
+
       // Verifica limite de sessões simultâneas (o coração do controle de acesso)
       if (plan.maxSessions !== -1) {
         const activeSessions = await Session.countDocuments({
