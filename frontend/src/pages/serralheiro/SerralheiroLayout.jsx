@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
 import {
-  LayoutDashboard, Users, Package, FileText, LogOut, Menu, X, UserCog, DollarSign, Bell, Settings, HardHat, ClipboardList,
+  LayoutDashboard, Users, Package, FileText, LogOut, Menu, X, UserCog, DollarSign, Bell, Settings, Wrench, ClipboardList,
 } from 'lucide-react'
 import api from '../../services/api'
 
@@ -14,7 +14,7 @@ const allNavItems = [
   { to: '/dashboard/orcamentos', label: 'Orçamentos', icon: FileText },
   { to: '/dashboard/financeiro', label: 'Financeiro', icon: DollarSign },
   { to: '/dashboard/ordens-servico', label: 'Ordens de Serviço', icon: ClipboardList },
-  { to: '/dashboard/funcionarios', label: 'Funcionários', icon: HardHat, ownerOnly: true },
+  { to: '/dashboard/funcionarios', label: 'Funcionários', icon: Wrench, ownerOnly: true },
   { to: '/dashboard/usuarios', label: 'Usuários', icon: UserCog, ownerOnly: true },
   { to: '/dashboard/configuracoes', label: 'Configurações', icon: Settings },
 ]

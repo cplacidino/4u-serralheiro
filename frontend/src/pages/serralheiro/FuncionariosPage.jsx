@@ -816,7 +816,7 @@ const FuncionariosPage = () => {
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
         <div className="rounded-2xl p-5" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-          <p className="text-sm mb-2" style={{ color: '#5c5c6b' }}>Total de Funcionários</p>
+          <p className="text-sm mb-2" style={{ color: '#5c5c6b' }}>Total</p>
           <p className="text-3xl font-bold" style={{ color: '#e0e0ec' }}>{employees.length}</p>
         </div>
         <div className="rounded-2xl p-5" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
