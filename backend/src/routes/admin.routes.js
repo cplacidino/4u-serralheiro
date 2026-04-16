@@ -2,6 +2,7 @@ const express = require('express');
 const { protect, restrict } = require('../middleware/auth.middleware');
 const {
   getStats, getCompanies, createCompany, updateCompany, getPlans, updatePlan,
+  getCompanyUsers, resetUserPassword,
 } = require('../controllers/admin.controller');
 
 const router = express.Router();
@@ -16,5 +17,8 @@ router.post('/companies', createCompany);
 router.put('/companies/:id', updateCompany);
 router.get('/plans', getPlans);
 router.put('/plans/:id', updatePlan);
+
+router.get('/companies/:id/users', getCompanyUsers);
+router.put('/companies/:id/users/:userId/reset-password', resetUserPassword);
 
 module.exports = router;

@@ -215,4 +215,52 @@ const updatePlan = async (req, res) => {
   }
 };
 
-module.exports = { getStats, getCompanies, createCompany, updateCompany, getPlans, updatePlan };
+// ─────────────────────────────────────────────
+// GET /api/admin/companies/:id/users — Listar usuários da empresa
+// ─────────────────────────────────────────────
+const getCompanyUsers = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const company = await Company.findById(id);
+    if (!company) return sendError(res, 'Empresa não encontrada', 404);
+
+    const users = await User.find({ company: id })
+      .select('name email role isActive createdAt')
+      .sort({ role: 1, name: 1 });
+
+    return sendSuccess(res, { users });
+  } catch (error) {
+    console.error('Erro ao listar usuários da empresa:', error);
+    return sendError(res, 'Erro ao listar usuários', 500);
+  }
+};
+
+// ─────────────────────────────────────────────
+// PUT /api/admin/companies/:id/users/:userId/reset-password
+// ─────────────────────────────────────────────
+const resetUserPassword = async (req, res) => {
+  try {
+    const { id, userId } = req.params;
+    const { newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 8) {
+      return sendError(res, 'A nova senha deve ter no mínimo 8 caracteres', 400);
+    }
+
+    const user = await User.findOne({ _id: userId, company: id });
+    if (!user) return sendError(res, 'Usuário não encontrado', 404);
+
+    user.password = newPassword;
+    await user.save(); // o pre('save') do modelo faz o hash automaticamente
+
+    // Encerra todas as sessões ativas do usuário para forçar novo login
+    await Session.updateMany({ user: userId }, { isActive: false });
+
+    return sendSuccess(res, {}, 'Senha redefinida com sucesso');
+  } catch (error) {
+    console.error('Erro ao redefinir senha:', error);
+    return sendError(res, 'Erro ao redefinir senha', 500);
+  }
+};
+
+module.exports = { getStats, getCompanies, createCompany, updateCompany, getPlans, updatePlan, getCompanyUsers, resetUserPassword };
