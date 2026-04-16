@@ -1,58 +1,118 @@
 import { useEffect, useState } from 'react'
-import { Check, Pencil } from 'lucide-react'
-import { useForm } from 'react-hook-form'
+import { Check, Pencil, Plus, Trash2, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 
-const EditModal = ({ plan, onClose, onSuccess }) => {
-  const { register, handleSubmit, formState: { isSubmitting } } = useForm({
-    defaultValues: { price: plan.price, features: plan.features.join('\n') },
+const inputStyle = {
+  background: '#242429',
+  border: '1px solid #3d3d47',
+  color: '#e0e0ec',
+  borderRadius: 12,
+  padding: '10px 14px',
+  fontSize: 14,
+  width: '100%',
+  outline: 'none',
+}
+
+// ─── Modal de criar/editar plano ───
+const PlanModal = ({ plan, onClose, onSuccess }) => {
+  const isEdit = !!plan
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({
+    name: plan?.name ?? '',
+    price: plan?.price ?? '',
+    maxUsers: plan?.maxUsers ?? 5,
+    maxSessions: plan?.maxSessions ?? 3,
+    features: plan?.features?.join('\n') ?? '',
   })
 
-  const onSubmit = async (data) => {
+  const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }))
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!form.name.trim()) return toast.error('Nome é obrigatório')
+    if (form.price === '' || isNaN(Number(form.price))) return toast.error('Preço inválido')
+
+    setSaving(true)
     try {
-      await api.put(`/admin/plans/${plan._id}`, {
-        price: Number(data.price),
-        features: data.features.split('\n').map(f => f.trim()).filter(Boolean),
-      })
-      toast.success('Plano atualizado!')
+      const payload = {
+        name: form.name.trim(),
+        price: Number(form.price),
+        maxUsers: Number(form.maxUsers),
+        maxSessions: Number(form.maxSessions),
+        features: form.features.split('\n').map(f => f.trim()).filter(Boolean),
+      }
+      if (isEdit) {
+        await api.put(`/admin/plans/${plan._id}`, payload)
+        toast.success('Plano atualizado!')
+      } else {
+        await api.post('/admin/plans', payload)
+        toast.success('Plano criado!')
+      }
       onSuccess()
       onClose()
-    } catch {
-      toast.error('Erro ao atualizar plano')
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Erro ao salvar plano')
+    } finally {
+      setSaving(false)
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
-      <div className="w-full max-w-md rounded-2xl" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
-        <div className="p-5" style={{ borderBottom: '1px solid #2e2e35' }}>
-          <h2 className="text-base font-bold" style={{ color: '#e0e0ec' }}>Editar Plano {plan.name}</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
+      <div className="w-full max-w-md rounded-2xl overflow-hidden" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
+        <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: '1px solid #2e2e35' }}>
+          <h2 className="text-base font-bold" style={{ color: '#e0e0ec' }}>
+            {isEdit ? `Editar Plano — ${plan.name}` : 'Novo Plano'}
+          </h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg" style={{ color: '#5c5c6b' }}><X size={16} /></button>
         </div>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-5 space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#b8b8c8' }}>Preço (R$)</label>
-            <input {...register('price')} type="number" step="0.01"
-              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-              style={{ background: '#242429', border: '1px solid #3d3d47', color: '#e0e0ec' }} />
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>Nome do plano *</label>
+              <input value={form.name} onChange={set('name')} placeholder="Ex: Profissional" style={inputStyle} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>Preço (R$/mês) *</label>
+              <input type="number" step="0.01" min="0" value={form.price} onChange={set('price')} placeholder="99.90" style={inputStyle} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>Máx. usuários</label>
+              <input type="number" min="-1" value={form.maxUsers} onChange={set('maxUsers')} placeholder="-1 = ilimitado" style={inputStyle} />
+              <p className="text-xs mt-1" style={{ color: '#5c5c6b' }}>-1 = ilimitado</p>
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>Máx. sessões simultâneas</label>
+              <input type="number" min="-1" value={form.maxSessions} onChange={set('maxSessions')} placeholder="-1 = ilimitado" style={inputStyle} />
+            </div>
           </div>
+
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#b8b8c8' }}>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: '#b8b8c8' }}>
               Funcionalidades <span style={{ color: '#5c5c6b' }}>(uma por linha)</span>
             </label>
-            <textarea {...register('features')} rows={7}
-              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none resize-none"
-              style={{ background: '#242429', border: '1px solid #3d3d47', color: '#e0e0ec' }} />
+            <textarea
+              value={form.features}
+              onChange={set('features')}
+              rows={6}
+              placeholder={"Clientes ilimitados\nOrçamentos ilimitados\nFinanceiro completo"}
+              className="resize-none"
+              style={{ ...inputStyle }}
+            />
           </div>
-          <div className="flex gap-3">
+
+          <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl text-sm" style={{ background: '#2e2e35', color: '#b8b8c8' }}>
+              className="flex-1 py-2.5 rounded-xl text-sm"
+              style={{ background: '#2e2e35', color: '#b8b8c8' }}>
               Cancelar
             </button>
-            <button type="submit" disabled={isSubmitting}
+            <button type="submit" disabled={saving}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-              style={{ background: 'linear-gradient(135deg, #f97316, #ea6c10)', color: 'white', opacity: isSubmitting ? 0.7 : 1 }}>
-              {isSubmitting ? 'Salvando...' : 'Salvar'}
+              style={{ background: 'linear-gradient(135deg, #f97316, #ea6c10)', color: 'white', opacity: saving ? 0.7 : 1 }}>
+              {saving ? 'Salvando...' : isEdit ? 'Salvar' : 'Criar Plano'}
             </button>
           </div>
         </form>
@@ -61,10 +121,58 @@ const EditModal = ({ plan, onClose, onSuccess }) => {
   )
 }
 
+// ─── Modal de confirmação de exclusão ───
+const DeleteConfirm = ({ plan, onClose, onSuccess }) => {
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      await api.delete(`/admin/plans/${plan._id}`)
+      toast.success('Plano excluído')
+      onSuccess()
+      onClose()
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Erro ao excluir plano')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
+      <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
+        <div className="flex items-center justify-center w-12 h-12 rounded-2xl mx-auto mb-4"
+          style={{ background: 'rgba(239,68,68,0.15)' }}>
+          <Trash2 size={22} style={{ color: '#ef4444' }} />
+        </div>
+        <h3 className="text-base font-bold text-center mb-2" style={{ color: '#e0e0ec' }}>Excluir plano "{plan.name}"?</h3>
+        <p className="text-sm text-center mb-6" style={{ color: '#8a8a9a' }}>
+          Esta ação não pode ser desfeita. Empresas que usam este plano precisarão ser migradas antes.
+        </p>
+        <div className="flex gap-3">
+          <button onClick={onClose}
+            className="flex-1 py-2.5 rounded-xl text-sm"
+            style={{ background: '#2e2e35', color: '#b8b8c8' }}>
+            Cancelar
+          </button>
+          <button onClick={handleDelete} disabled={deleting}
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+            style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', opacity: deleting ? 0.7 : 1 }}>
+            {deleting ? 'Excluindo...' : 'Excluir'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Página principal ───
 const AdminPlansPage = () => {
   const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(true)
-  const [editing, setEditing] = useState(null)
+  const [modal, setModal] = useState(null)       // null | 'create' | planObj (edit)
+  const [toDelete, setToDelete] = useState(null) // null | planObj
 
   const fetchPlans = async () => {
     try {
@@ -90,34 +198,50 @@ const AdminPlansPage = () => {
 
   return (
     <div>
-      <div className="mb-6">
-        <h2 className="text-xl font-bold" style={{ color: '#e0e0ec' }}>Planos</h2>
-        <p className="text-sm mt-0.5" style={{ color: '#8a8a9a' }}>Gerencie os planos de assinatura</p>
+      <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
+        <div>
+          <h2 className="text-xl font-bold" style={{ color: '#e0e0ec' }}>Planos</h2>
+          <p className="text-sm mt-0.5" style={{ color: '#8a8a9a' }}>Gerencie os planos de assinatura</p>
+        </div>
+        <button onClick={() => setModal('create')}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold"
+          style={{ background: 'linear-gradient(135deg, #f97316, #ea6c10)', color: 'white' }}>
+          <Plus size={15} /> Novo Plano
+        </button>
       </div>
 
-      {/* Cards — empilha no mobile, lado a lado no desktop */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {plans.map((plan) => (
           <div key={plan._id} className="rounded-2xl p-5 flex flex-col"
-            style={{ background: '#1a1a1f', border: `1px solid ${plan.name === 'Premium' ? 'rgba(249,115,22,0.35)' : '#2e2e35'}` }}>
+            style={{ background: '#1a1a1f', border: '1px solid #2e2e35' }}>
 
+            {/* Header do card */}
             <div className="flex items-start justify-between mb-4">
               <div>
-                {plan.name === 'Premium' && (
-                  <span className="text-xs px-2 py-0.5 rounded-full font-semibold block mb-1.5"
-                    style={{ background: 'rgba(249,115,22,0.2)', color: '#f97316', width: 'fit-content' }}>
-                    ★ Mais popular
-                  </span>
-                )}
                 <h3 className="text-lg font-bold" style={{ color: '#e0e0ec' }}>{plan.name}</h3>
+                <p className="text-xs mt-0.5" style={{ color: '#8a8a9a' }}>
+                  {plan.maxUsers === -1 ? 'Usuários ilimitados' : `Até ${plan.maxUsers} usuário${plan.maxUsers > 1 ? 's' : ''}`}
+                  {' · '}
+                  {plan.maxSessions === -1 ? 'sessões ilimitadas' : `${plan.maxSessions} sessõe${plan.maxSessions > 1 ? 's' : ''} simultâneas`}
+                </p>
               </div>
-              <button onClick={() => setEditing(plan)}
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg flex-shrink-0 ml-2"
-                style={{ background: '#2e2e35', color: '#8a8a9a' }}>
-                <Pencil size={11} /> Editar
-              </button>
+              <div className="flex gap-1.5 flex-shrink-0 ml-2">
+                <button onClick={() => setModal(plan)}
+                  className="p-2 rounded-xl"
+                  style={{ background: '#2e2e35', color: '#8a8a9a' }}
+                  title="Editar">
+                  <Pencil size={14} />
+                </button>
+                <button onClick={() => setToDelete(plan)}
+                  className="p-2 rounded-xl"
+                  style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}
+                  title="Excluir">
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
 
+            {/* Preço */}
             <div className="mb-4">
               <span className="text-3xl font-bold" style={{ color: '#e0e0ec' }}>
                 R$ {plan.price.toFixed(2).replace('.', ',')}
@@ -125,23 +249,48 @@ const AdminPlansPage = () => {
               <span className="text-sm ml-1" style={{ color: '#8a8a9a' }}>/mês</span>
             </div>
 
-            <p className="text-sm mb-4 font-medium" style={{ color: '#f97316' }}>
-              {plan.maxUsers === -1 ? 'Usuários ilimitados' : `Até ${plan.maxUsers} usuários simultâneos`}
-            </p>
-
-            <ul className="space-y-2 flex-1">
-              {plan.features.map((f, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm" style={{ color: '#b8b8c8' }}>
-                  <Check size={14} className="mt-0.5 flex-shrink-0" style={{ color: '#22c55e' }} />
-                  {f}
-                </li>
-              ))}
-            </ul>
+            {/* Funcionalidades */}
+            {plan.features.length > 0 ? (
+              <ul className="space-y-2 flex-1">
+                {plan.features.map((f, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm" style={{ color: '#b8b8c8' }}>
+                    <Check size={14} className="mt-0.5 flex-shrink-0" style={{ color: '#22c55e' }} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm flex-1" style={{ color: '#5c5c6b' }}>Nenhuma funcionalidade cadastrada.</p>
+            )}
           </div>
         ))}
+
+        {/* Card de adicionar */}
+        <button onClick={() => setModal('create')}
+          className="rounded-2xl p-5 flex flex-col items-center justify-center gap-3 transition-all"
+          style={{ background: 'transparent', border: '2px dashed #2e2e35', minHeight: 180 }}
+          onMouseEnter={e => e.currentTarget.style.borderColor = '#f97316'}
+          onMouseLeave={e => e.currentTarget.style.borderColor = '#2e2e35'}>
+          <Plus size={28} style={{ color: '#5c5c6b' }} />
+          <span className="text-sm font-medium" style={{ color: '#5c5c6b' }}>Adicionar plano</span>
+        </button>
       </div>
 
-      {editing && <EditModal plan={editing} onClose={() => setEditing(null)} onSuccess={fetchPlans} />}
+      {(modal === 'create' || (modal && modal !== 'create')) && (
+        <PlanModal
+          plan={modal === 'create' ? null : modal}
+          onClose={() => setModal(null)}
+          onSuccess={fetchPlans}
+        />
+      )}
+
+      {toDelete && (
+        <DeleteConfirm
+          plan={toDelete}
+          onClose={() => setToDelete(null)}
+          onSuccess={fetchPlans}
+        />
+      )}
     </div>
   )
 }

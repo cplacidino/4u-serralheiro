@@ -9,6 +9,7 @@ import AdminLayout from './pages/admin/AdminLayout'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminCompaniesPage from './pages/admin/AdminCompaniesPage'
 import AdminPlansPage from './pages/admin/AdminPlansPage'
+import AdminAlertsPage from './pages/admin/AdminAlertsPage'
 
 // Serralheiro
 import SerralheiroLayout from './pages/serralheiro/SerralheiroLayout'
@@ -66,6 +67,7 @@ function App() {
             <Route index element={<AdminDashboardPage />} />
             <Route path="empresas" element={<AdminCompaniesPage />} />
             <Route path="planos" element={<AdminPlansPage />} />
+            <Route path="alertas" element={<AdminAlertsPage />} />
           </Route>
 
           <Route path="/" element={<Navigate to="/login" replace />} />

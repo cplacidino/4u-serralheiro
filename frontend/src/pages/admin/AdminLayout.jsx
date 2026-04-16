@@ -2,16 +2,17 @@ import { useState, useEffect } from 'react'
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
-import { LayoutDashboard, Building2, CreditCard, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Building2, CreditCard, LogOut, Menu, X, Bell } from 'lucide-react'
+import api from '../../services/api'
 
 const navItems = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/empresas', label: 'Empresas', icon: Building2 },
   { to: '/admin/planos', label: 'Planos', icon: CreditCard },
+  { to: '/admin/alertas', label: 'Alertas', icon: Bell },
 ]
 
-// Conteúdo da sidebar — reutilizado no desktop e no drawer mobile
-const SidebarContent = ({ onClose, user, onLogout }) => (
+const SidebarContent = ({ onClose, user, onLogout, alertCount }) => (
   <div className="flex flex-col h-full">
     {/* Logo */}
     <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid #2e2e35' }}>
@@ -24,7 +25,6 @@ const SidebarContent = ({ onClose, user, onLogout }) => (
           Admin
         </span>
       </div>
-      {/* Botão fechar — só aparece no mobile */}
       {onClose && (
         <button onClick={onClose} className="lg:hidden p-1" style={{ color: '#5c5c6b' }}>
           <X size={18} />
@@ -35,15 +35,23 @@ const SidebarContent = ({ onClose, user, onLogout }) => (
     {/* Navegação */}
     <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
       {navItems.map(({ to, label, icon: Icon, end }) => (
-        <NavLink key={to} to={to} end={end}
-          onClick={onClose}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+        <NavLink key={to} to={to} end={end} onClick={onClose}
+          className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
           style={({ isActive }) => ({
             background: isActive ? 'rgba(249,115,22,0.15)' : 'transparent',
             color: isActive ? '#f97316' : '#8a8a9a',
           })}>
-          <Icon size={17} />
-          {label}
+          <span className="flex items-center gap-3">
+            <Icon size={17} />
+            {label}
+          </span>
+          {/* Badge de alertas */}
+          {label === 'Alertas' && alertCount > 0 && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+              style={{ background: '#ef4444', color: 'white' }}>
+              {alertCount > 99 ? '99+' : alertCount}
+            </span>
+          )}
         </NavLink>
       ))}
     </nav>
@@ -57,7 +65,7 @@ const SidebarContent = ({ onClose, user, onLogout }) => (
         </div>
         <div className="min-w-0">
           <p className="text-xs font-medium truncate" style={{ color: '#e0e0ec' }}>{user?.name}</p>
-          <p className="text-xs truncate" style={{ color: '#5c5c6b', fontSize: 10 }}>{user?.email}</p>
+          <p className="truncate" style={{ color: '#5c5c6b', fontSize: 10 }}>{user?.email}</p>
         </div>
       </div>
       <button onClick={onLogout}
@@ -73,12 +81,28 @@ const SidebarContent = ({ onClose, user, onLogout }) => (
 
 const AdminLayout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [alertCount, setAlertCount] = useState(0)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Fecha o drawer mobile ao trocar de página
   useEffect(() => { setDrawerOpen(false) }, [location.pathname])
+
+  // Busca contagem de alertas (vencidas + vencendo em 30 dias) a cada 5 min
+  useEffect(() => {
+    const fetchAlertCount = async () => {
+      try {
+        const res = await api.get('/admin/alerts')
+        const d = res.data.data
+        const total = (d.expired?.length ?? 0) + (d.expiring7?.length ?? 0) +
+          (d.expiring15?.length ?? 0) + (d.expiring30?.length ?? 0)
+        setAlertCount(total)
+      } catch { /* silencia */ }
+    }
+    fetchAlertCount()
+    const id = setInterval(fetchAlertCount, 5 * 60 * 1000)
+    return () => clearInterval(id)
+  }, [])
 
   const handleLogout = async () => {
     await logout()
@@ -89,44 +113,32 @@ const AdminLayout = () => {
   return (
     <div className="min-h-screen flex" style={{ background: '#111114' }}>
 
-      {/* ══════════════════════════════════════
-          SIDEBAR DESKTOP — sempre visível no lg+
-          ══════════════════════════════════════ */}
-      <aside
-        className="hidden lg:flex flex-col flex-shrink-0"
-        style={{ width: 220, background: '#1a1a1f', borderRight: '1px solid #2e2e35' }}
-      >
-        <SidebarContent user={user} onLogout={handleLogout} />
+      {/* Sidebar desktop */}
+      <aside className="hidden lg:flex flex-col flex-shrink-0"
+        style={{ width: 220, background: '#1a1a1f', borderRight: '1px solid #2e2e35' }}>
+        <SidebarContent user={user} onLogout={handleLogout} alertCount={alertCount} />
       </aside>
 
-      {/* ══════════════════════════════════════
-          DRAWER MOBILE — overlay com toggle
-          ══════════════════════════════════════ */}
+      {/* Overlay mobile */}
       {drawerOpen && (
         <div className="fixed inset-0 z-30 lg:hidden" style={{ background: 'rgba(0,0,0,0.65)' }}
           onClick={() => setDrawerOpen(false)} />
       )}
-      <aside
-        className="fixed top-0 left-0 h-full z-40 lg:hidden flex flex-col"
+
+      {/* Drawer mobile */}
+      <aside className="fixed top-0 left-0 h-full z-40 lg:hidden flex flex-col"
         style={{
-          width: 220,
-          background: '#1a1a1f',
-          borderRight: '1px solid #2e2e35',
+          width: 220, background: '#1a1a1f', borderRight: '1px solid #2e2e35',
           transform: drawerOpen ? 'translateX(0)' : 'translateX(-220px)',
           transition: 'transform 0.25s ease',
-        }}
-      >
-        <SidebarContent onClose={() => setDrawerOpen(false)} user={user} onLogout={handleLogout} />
+        }}>
+        <SidebarContent onClose={() => setDrawerOpen(false)} user={user} onLogout={handleLogout} alertCount={alertCount} />
       </aside>
 
-      {/* ══════════════════════════════════════
-          CONTEÚDO PRINCIPAL
-          ══════════════════════════════════════ */}
+      {/* Conteúdo principal */}
       <main className="flex-1 min-w-0 flex flex-col">
-        {/* Header com botão menu — visível em todos os tamanhos */}
         <header className="sticky top-0 z-20 flex items-center gap-3 px-4 py-3"
           style={{ background: '#111114', borderBottom: '1px solid #2e2e35' }}>
-          {/* No desktop o botão ainda existe para fechar/abrir se quiser, mas a sidebar já está visível */}
           <button onClick={() => setDrawerOpen(true)} className="lg:hidden p-2 rounded-xl"
             style={{ color: '#8a8a9a', background: '#1a1a1f' }}>
             <Menu size={18} />
@@ -134,6 +146,18 @@ const AdminLayout = () => {
           <span className="text-sm font-semibold lg:hidden" style={{ color: '#e0e0ec' }}>
             4u <span style={{ color: '#f97316' }}>Serralheiro</span>
           </span>
+          {/* Sino de alertas no header mobile */}
+          {alertCount > 0 && (
+            <button onClick={() => navigate('/admin/alertas')}
+              className="lg:hidden relative p-2 rounded-xl ml-auto"
+              style={{ background: '#1a1a1f', color: '#eab308' }}>
+              <Bell size={18} />
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-xs font-bold flex items-center justify-center"
+                style={{ background: '#ef4444', color: 'white', fontSize: 9 }}>
+                {alertCount > 9 ? '9+' : alertCount}
+              </span>
+            </button>
+          )}
         </header>
 
         <div className="flex-1 p-4 md:p-6">
