@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import {
   Plus, Search, Users, Pencil, Trash2, X, Wallet, Receipt,
   ChevronLeft, ChevronRight, CheckCircle2, Printer, AlertCircle, Download,
@@ -125,7 +125,9 @@ const printVale = (vale, employee, company) => {
 
 // ─── Impressão do resumo de pagamento ────────────────────────────────────────
 const printPayroll = (payroll) => {
-  const { employee, company, monthStr, vales, salary, totalVales, netPay } = payroll
+  const { employee, company, monthStr, vales, salary, totalVales, extraDeductions: extras = [], payDate: pd } = payroll
+  const totalExtras = extras.reduce((s, d) => s + (Number(d.amount) || 0), 0)
+  const netPay = Math.max(0, salary - totalVales - totalExtras)
   const w = window.open('', '_blank', 'width=700,height=640')
   const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
 <title>Pagamento — ${employee.name}</title>
@@ -204,6 +206,8 @@ const printPayroll = (payroll) => {
   <div class="totals">
     <div class="tot-row"><span>Salário Base</span><span>${fmt(salary)}</span></div>
     <div class="tot-row deduct"><span>Total de Vales (${vales.length})</span><span>− ${fmt(totalVales)}</span></div>
+    ${extras.length > 0 ? extras.map(d => `<div class="tot-row deduct"><span>${d.label || 'Desconto'}</span><span>− ${fmt(Number(d.amount) || 0)}</span></div>`).join('') : ''}
+    ${pd ? `<div class="tot-row" style="font-size:11px;color:#888;border-top:1px dashed #ddd;padding-top:6px;margin-top:4px"><span>Data do Pagamento</span><span>${fmtDate(new Date(pd + 'T12:00:00'))}</span></div>` : ''}
     <div class="tot-row net"><span>Valor Líquido a Pagar</span><span>${fmt(netPay)}</span></div>
   </div>
 
@@ -340,6 +344,19 @@ const ValeModal = ({ employee, company, onClose, onSaved }) => {
     try {
       const res = await api.post(`/s/employees/${employee._id}/vales`, { amount, reason, date, notes })
       const vale = res.data.data.vale
+      try {
+        await api.post('/s/finance', {
+          type: 'despesa',
+          category: 'Salários',
+          description: `Vale — ${employee.name}: ${reason}`,
+          amount: Number(amount),
+          isPaid: true,
+          date,
+          supplier: employee.name,
+        })
+      } catch {
+        toast('Vale emitido, mas não foi possível registrar no financeiro. Verifique manualmente.', { icon: '⚠️', duration: 5000 })
+      }
       toast.success('Vale emitido!')
       onSaved()
       // Imprime imediatamente
@@ -415,6 +432,10 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
   const [loadingPayroll, setLoadingPayroll] = useState(false)
   const [showValeModal, setShowValeModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [payDate, setPayDate] = useState(todayStr())
+  const [extraDeductions, setExtraDeductions] = useState([])
+  const [confirmingPayment, setConfirmingPayment] = useState(false)
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false)
 
   const prevMonth = () => {
     const [y, m] = month.split('-').map(Number)
@@ -425,6 +446,53 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
     const [y, m] = month.split('-').map(Number)
     const d = new Date(y, m, 1)
     setMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
+  }
+
+  const totalExtraDeductions = extraDeductions.reduce((s, d) => s + (Number(d.amount) || 0), 0)
+
+  const addDeduction = () => setExtraDeductions(prev => [...prev, { id: Date.now(), label: '', amount: '' }])
+  const removeDeduction = (id) => setExtraDeductions(prev => prev.filter(d => d.id !== id))
+  const updateDeduction = (id, field, value) => setExtraDeductions(prev => prev.map(d => d.id === id ? { ...d, [field]: value } : d))
+
+  // Persiste descontos no localStorage por funcionário/mês (ref evita race condition)
+  const dedKeyRef = useRef(`ded-${employee._id}-${month}`)
+  useEffect(() => {
+    dedKeyRef.current = `ded-${employee._id}-${month}`
+    try { const s = localStorage.getItem(dedKeyRef.current); setExtraDeductions(s ? JSON.parse(s) : []) } catch { setExtraDeductions([]) }
+  }, [employee._id, month])
+  useEffect(() => {
+    try { localStorage.setItem(dedKeyRef.current, JSON.stringify(extraDeductions)) } catch {}
+  }, [extraDeductions])
+
+  // Reseta confirmação ao trocar de mês
+  useEffect(() => { setPaymentConfirmed(false) }, [month])
+
+  const handleConfirmPayment = async () => {
+    if (!payroll) return
+    const finalNet = Math.max(0, payroll.salary - payroll.totalVales - totalExtraDeductions)
+    if (finalNet <= 0) {
+      toast.error('Valor líquido a pagar é zero. Verifique os descontos.')
+      return
+    }
+    setConfirmingPayment(true)
+    try {
+      await api.post('/s/finance', {
+        type: 'despesa',
+        category: 'Salários',
+        description: `Pagamento ${employee.name} — ${monthLabel(month)}`,
+        amount: finalNet,
+        isPaid: true,
+        date: payDate,
+        supplier: employee.name,
+      })
+      toast.success('Pagamento registrado no financeiro!')
+      setPaymentConfirmed(true)
+      fetchPayroll()
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Erro ao registrar pagamento')
+    } finally {
+      setConfirmingPayment(false)
+    }
   }
 
   const fetchVales = useCallback(async () => {
@@ -447,7 +515,7 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
   }, [employee._id, month])
 
   useEffect(() => {
-    if (tab === 'vales') fetchVales()
+    fetchVales()
     if (tab === 'pagamento') fetchPayroll()
   }, [tab, fetchVales, fetchPayroll])
 
@@ -472,6 +540,7 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
   const handleValeAdded = () => {
     fetchVales()
     if (tab === 'pagamento') fetchPayroll()
+    onUpdate()
   }
 
   const handleEmployeeUpdated = async () => {
@@ -542,7 +611,7 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
             </div>
             <div className="rounded-xl p-3 text-center" style={{ background: 'var(--c-bg2)' }}>
               <p className="text-xs mb-1" style={{ color: 'var(--c-tx3)' }}>Vales (mês)</p>
-              <p className="text-sm font-bold" style={{ color: '#f97316' }}>{fmt(employee.currentMonthVales ?? totalVales)}</p>
+              <p className="text-sm font-bold" style={{ color: '#f97316' }}>{fmt(totalVales)}</p>
             </div>
             <div className="rounded-xl p-3 text-center" style={{ background: 'var(--c-bg2)' }}>
               <p className="text-xs mb-1" style={{ color: 'var(--c-tx3)' }}>Admissão</p>
@@ -695,8 +764,8 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
                       <p className="text-sm font-bold" style={{ color: '#ef4444' }}>− {fmt(payroll.totalVales)}</p>
                     </div>
                     <div className="rounded-xl p-3 text-center"
-                      style={{ background: payroll.netPay > 0 ? 'rgba(34,197,94,0.08)' : 'var(--c-bg2)', border: `1px solid ${payroll.netPay > 0 ? 'rgba(34,197,94,0.3)' : 'var(--c-bd0)'}` }}>
-                      <p className="text-xs mb-1" style={{ color: 'var(--c-tx3)' }}>A Pagar</p>
+                      style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)' }}>
+                      <p className="text-xs mb-1" style={{ color: 'var(--c-tx3)' }}>Líquido Base</p>
                       <p className="text-sm font-bold" style={{ color: '#22c55e' }}>{fmt(payroll.netPay)}</p>
                     </div>
                   </div>
@@ -710,8 +779,114 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
                     </div>
                   )}
 
+                  {/* Descontos adicionais */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--c-tx3)' }}>
+                        Descontos Adicionais
+                      </p>
+                      <button onClick={addDeduction}
+                        className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg font-medium"
+                        style={{ background: 'rgba(249,115,22,0.1)', color: '#f97316' }}>
+                        <Plus size={11} /> Adicionar
+                      </button>
+                    </div>
+                    {extraDeductions.length === 0 ? (
+                      <p className="text-xs py-2" style={{ color: 'var(--c-tx3)' }}>
+                        Nenhum desconto adicional (FGTS, INSS, IR, outros).
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {extraDeductions.map(d => (
+                          <div key={d.id} className="flex items-center gap-2">
+                            <input
+                              value={d.label}
+                              onChange={e => updateDeduction(d.id, 'label', e.target.value)}
+                              placeholder="Ex: FGTS, INSS, IR..."
+                              className="flex-1 text-xs outline-none py-2 px-3 rounded-lg"
+                              style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)', color: 'var(--c-tx0)' }} />
+                            <input
+                              type="number" min="0" step="0.01"
+                              value={d.amount}
+                              onChange={e => updateDeduction(d.id, 'amount', e.target.value)}
+                              placeholder="R$ 0,00"
+                              className="w-24 text-xs outline-none py-2 px-3 rounded-lg"
+                              style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)', color: 'var(--c-tx0)' }} />
+                            <button onClick={() => removeDeduction(d.id)}
+                              className="p-1.5 rounded-lg flex-shrink-0"
+                              style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ))}
+                        <div className="flex justify-between items-center pt-1">
+                          <span className="text-xs" style={{ color: 'var(--c-tx3)' }}>Total descontos adicionais</span>
+                          <span className="text-sm font-bold" style={{ color: '#ef4444' }}>− {fmt(totalExtraDeductions)}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Resumo final */}
+                  <div className="rounded-xl p-4" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.25)' }}>
+                    <div className="space-y-1.5 text-sm mb-3">
+                      <div className="flex justify-between">
+                        <span style={{ color: 'var(--c-tx2)' }}>Salário base</span>
+                        <span style={{ color: '#22c55e' }}>{fmt(payroll.salary)}</span>
+                      </div>
+                      {payroll.totalVales > 0 && (
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--c-tx2)' }}>− Vales</span>
+                          <span style={{ color: '#ef4444' }}>− {fmt(payroll.totalVales)}</span>
+                        </div>
+                      )}
+                      {totalExtraDeductions > 0 && (
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--c-tx2)' }}>− Descontos</span>
+                          <span style={{ color: '#ef4444' }}>− {fmt(totalExtraDeductions)}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex justify-between items-center pt-2" style={{ borderTop: '1px solid rgba(34,197,94,0.2)' }}>
+                      <span className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>Valor a pagar</span>
+                      <span className="text-xl font-bold" style={{ color: '#22c55e' }}>
+                        {fmt(Math.max(0, payroll.salary - payroll.totalVales - totalExtraDeductions))}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Data do pagamento + confirmar */}
+                  {isOwner && (
+                    <div className="space-y-2">
+                      <div>
+                        <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx2)' }}>
+                          Data do Pagamento
+                        </label>
+                        <input type="date" value={payDate} onChange={e => setPayDate(e.target.value)}
+                          className="w-full py-2.5 px-3 rounded-xl text-sm outline-none"
+                          style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)', color: 'var(--c-tx0)' }} />
+                      </div>
+                      {paymentConfirmed ? (
+                        <div className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold"
+                          style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.4)', color: '#22c55e' }}>
+                          <CheckCircle2 size={16} /> Pagamento já confirmado neste mês
+                        </div>
+                      ) : (
+                        <button onClick={handleConfirmPayment} disabled={confirmingPayment}
+                          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold"
+                          style={{
+                            background: 'linear-gradient(135deg,#22c55e,#16a34a)',
+                            color: 'white', opacity: confirmingPayment ? 0.7 : 1,
+                          }}>
+                          <CheckCircle2 size={16} />
+                          {confirmingPayment ? 'Registrando...' : 'Confirmar Pagamento'}
+                        </button>
+                      )}
+                    </div>
+                  )}
+
                   {/* Lista de vales */}
-                  {payroll.vales.length > 0 ? (
+                  {payroll.vales.length > 0 && (
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--c-tx3)' }}>
                         Vales do mês ({payroll.vales.length})
@@ -730,14 +905,10 @@ const EmployeePanel = ({ employee: initialEmployee, company, onClose, onUpdate }
                         ))}
                       </div>
                     </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <p className="text-sm" style={{ color: 'var(--c-tx3)' }}>Nenhum vale neste mês — pagamento integral.</p>
-                    </div>
                   )}
 
                   {/* Botão imprimir */}
-                  <button onClick={() => printPayroll(payroll)}
+                  <button onClick={() => printPayroll({ ...payroll, extraDeductions, payDate })}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold"
                     style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)', color: 'var(--c-tx1)' }}>
                     <Printer size={15} /> Imprimir Resumo de Pagamento

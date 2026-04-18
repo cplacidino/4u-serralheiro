@@ -27,14 +27,23 @@ const CATEGORIES = {
 const getSummary = async (req, res) => {
   try {
     const company = req.user.company;
-    const { month } = req.query; // ex: "2025-04"
+    const { month, dateFrom, dateTo } = req.query;
 
     const now = new Date();
-    const year  = month ? parseInt(month.split('-')[0]) : now.getFullYear();
-    const mon   = month ? parseInt(month.split('-')[1]) : now.getMonth() + 1;
+    let start, end, year, mon;
 
-    const start = new Date(year, mon - 1, 1);
-    const end   = new Date(year, mon, 1);
+    if (dateFrom || dateTo) {
+      start = dateFrom ? new Date(dateFrom) : new Date(now.getFullYear(), 0, 1);
+      end   = dateTo   ? new Date(dateTo)   : new Date();
+      end.setHours(23, 59, 59, 999);
+      year = end.getFullYear();
+      mon  = end.getMonth() + 1;
+    } else {
+      year  = month ? parseInt(month.split('-')[0]) : now.getFullYear();
+      mon   = month ? parseInt(month.split('-')[1]) : now.getMonth() + 1;
+      start = new Date(year, mon - 1, 1);
+      end   = new Date(year, mon, 1);
+    }
 
     // Faz todas as queries em paralelo para melhor performance
     const sixMonthsAgo = new Date(year, mon - 7, 1);

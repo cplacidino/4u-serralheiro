@@ -432,6 +432,7 @@ const FinanceiroPage = () => {
   const [totalDue, setTotalDue] = useState(0)
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [quickPeriod, setQuickPeriod] = useState('mes')
 
   const monthStr = `${year}-${String(month).padStart(2, '0')}`
 
@@ -448,8 +449,16 @@ const FinanceiroPage = () => {
       if (typeFilter) params.append('type', typeFilter)
       if (pendingFilter) params.append('pending', 'true')
 
+      const summaryParams = new URLSearchParams()
+      if (dateFrom || dateTo) {
+        if (dateFrom) summaryParams.append('dateFrom', dateFrom)
+        if (dateTo) summaryParams.append('dateTo', dateTo)
+      } else {
+        summaryParams.append('month', monthStr)
+      }
+
       const [sumRes, txRes, fiadosRes, dueRes] = await Promise.all([
-        api.get(`/s/finance/summary?month=${monthStr}`),
+        api.get(`/s/finance/summary?${summaryParams}`),
         api.get(`/s/finance?${params}`),
         api.get('/s/payments/fiados').catch(() => ({ data: { data: { fiados: [], totalPendente: 0 } } })),
         api.get('/s/finance/due').catch(() => ({ data: { data: { expenses: [], totalDue: 0 } } })),
@@ -551,6 +560,25 @@ const FinanceiroPage = () => {
       fetchAll()
     } catch (e) {
       toast.error(e.response?.data?.message || 'Erro ao marcar como paga')
+    }
+  }
+
+  const applyQuickPeriod = (p) => {
+    setQuickPeriod(p)
+    setPage(1)
+    if (p === 'mes') { setDateFrom(''); setDateTo('') }
+    else if (p === 'hoje') {
+      const t = new Date().toISOString().split('T')[0]
+      setDateFrom(t); setDateTo(t)
+    } else if (p === 'semana') {
+      const now = new Date()
+      const diff = now.getDay() === 0 ? 6 : now.getDay() - 1
+      const mon = new Date(now); mon.setDate(now.getDate() - diff)
+      setDateFrom(mon.toISOString().split('T')[0])
+      setDateTo(now.toISOString().split('T')[0])
+    } else if (p === 'ano') {
+      const y = new Date().getFullYear()
+      setDateFrom(`${y}-01-01`); setDateTo(`${y}-12-31`)
     }
   }
 
@@ -802,24 +830,35 @@ const FinanceiroPage = () => {
           {/* Filtro por período */}
           <div className="flex items-center gap-2 flex-wrap w-full pt-1" style={{ borderTop: '1px solid var(--c-bd0)' }}>
             <span className="text-xs font-medium" style={{ color: 'var(--c-tx3)' }}>Período:</span>
-            <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(1) }}
+            {[
+              { key: 'hoje', label: 'Hoje' },
+              { key: 'semana', label: 'Semana' },
+              { key: 'mes', label: 'Mês' },
+              { key: 'ano', label: 'Ano' },
+            ].map(({ key, label }) => (
+              <button key={key} onClick={() => applyQuickPeriod(key)}
+                className="px-3 py-1.5 rounded-xl text-xs font-medium"
+                style={{
+                  background: quickPeriod === key ? 'rgba(249,115,22,0.15)' : 'var(--c-bg2)',
+                  color: quickPeriod === key ? '#f97316' : 'var(--c-tx2)',
+                }}>
+                {label}
+              </button>
+            ))}
+            <span className="text-xs" style={{ color: 'var(--c-tx3)' }}>ou</span>
+            <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setQuickPeriod(''); setPage(1) }}
               className="py-1.5 px-3 rounded-xl text-xs outline-none"
               style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)', color: dateFrom ? 'var(--c-tx0)' : 'var(--c-tx3)' }} />
             <span className="text-xs" style={{ color: 'var(--c-tx3)' }}>até</span>
-            <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(1) }}
+            <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setQuickPeriod(''); setPage(1) }}
               className="py-1.5 px-3 rounded-xl text-xs outline-none"
               style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)', color: dateTo ? 'var(--c-tx0)' : 'var(--c-tx3)' }} />
             {(dateFrom || dateTo) && (
-              <button onClick={() => { setDateFrom(''); setDateTo(''); setPage(1) }}
+              <button onClick={() => { setDateFrom(''); setDateTo(''); setQuickPeriod('mes'); setPage(1) }}
                 className="text-xs px-3 py-1.5 rounded-xl"
                 style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>
                 Limpar
               </button>
-            )}
-            {(dateFrom || dateTo) && (
-              <span className="text-xs ml-auto" style={{ color: '#f97316' }}>
-                Filtrando por intervalo — KPIs mantêm o mês selecionado
-              </span>
             )}
           </div>
         </div>
@@ -890,6 +929,13 @@ const FinanceiroPage = () => {
                 </div>
 
                 <div className="flex items-center gap-2 flex-shrink-0">
+                  {!tx.isPaid && tx.type === 'despesa' && (
+                    <button onClick={() => handlePay(tx._id)} className="p-2 rounded-lg"
+                      style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e' }}
+                      title="Marcar como pago">
+                      <CheckCircle2 size={15} />
+                    </button>
+                  )}
                   <button onClick={() => setEditTx(tx)} className="p-2 rounded-lg"
                     style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }}>
                     <Pencil size={15} />
