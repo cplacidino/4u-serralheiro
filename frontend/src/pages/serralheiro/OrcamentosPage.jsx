@@ -1,8 +1,9 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import useAutoRefresh from '../../hooks/useAutoRefresh'
 import {
   Plus, Search, FileText, Trash2, Eye, Pencil, X,
   ChevronLeft, ChevronRight, Printer, CreditCard, MessageCircle, Copy, Download, ClipboardList,
+  ChevronDown, CheckCircle,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
@@ -56,6 +57,69 @@ const Field = ({ label, error, children }) => (
     {error && <p className="mt-1 text-xs" style={{ color: '#ef4444' }}>{error}</p>}
   </div>
 )
+
+// ─── Autocomplete ──────────────────────────────────────────────────────────────
+const Autocomplete = ({ options, value, onChange, placeholder, getLabel, getKey, error }) => {
+  const [query, setQuery] = useState('')
+  const [open, setOpen] = useState(false)
+  const wrapRef = useRef(null)
+
+  const selected = options.find(o => getKey(o) === value)
+
+  const filtered = query.trim()
+    ? options.filter(o => getLabel(o).toLowerCase().includes(query.toLowerCase())).slice(0, 10)
+    : options.slice(0, 10)
+
+  // fecha se clicar fora
+  useEffect(() => {
+    const handler = (e) => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  return (
+    <div ref={wrapRef} style={{ position: 'relative' }}>
+      <div style={{ position: 'relative' }}>
+        <input
+          value={open ? query : (selected ? getLabel(selected) : '')}
+          onFocus={() => { setOpen(true); setQuery('') }}
+          onChange={e => { setQuery(e.target.value); setOpen(true) }}
+          placeholder={placeholder}
+          style={{ ...inputCls(error), paddingRight: 36 }}
+          autoComplete="off"
+        />
+        <ChevronDown size={16} style={{
+          position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+          color: 'var(--c-tx3)', pointerEvents: 'none',
+          transition: 'transform 0.15s', transform: open ? 'translateY(-50%) rotate(180deg)' : 'translateY(-50%)',
+        }} />
+      </div>
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 200,
+          background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)', borderRadius: 10,
+          maxHeight: 220, overflowY: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+        }}>
+          {filtered.length === 0 ? (
+            <div style={{ padding: '12px 14px', color: 'var(--c-tx3)', fontSize: 13 }}>Nenhum resultado</div>
+          ) : filtered.map(o => (
+            <div key={getKey(o)}
+              onMouseDown={e => { e.preventDefault(); onChange(getKey(o)); setOpen(false); setQuery('') }}
+              style={{
+                padding: '10px 14px', cursor: 'pointer', fontSize: 14, color: 'var(--c-tx0)',
+                background: getKey(o) === value ? 'rgba(249,115,22,0.1)' : 'transparent',
+                borderBottom: '1px solid var(--c-bd0)',
+              }}
+              onMouseEnter={e => { if (getKey(o) !== value) e.currentTarget.style.background = 'var(--c-bg0)' }}
+              onMouseLeave={e => { if (getKey(o) !== value) e.currentTarget.style.background = 'transparent' }}>
+              {getLabel(o)}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 // ─── Badge de status ───────────────────────────────────────────────────────────
 const StatusBadge = ({ status }) => {
@@ -157,10 +221,9 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
 
   const handlePrint = () => {
     const w = window.open('', '_blank')
-    const co = budget.company   // dados da empresa emissora
-    const cl = budget.client    // dados do cliente
+    const co = budget.company
+    const cl = budget.client
 
-    // Monta endereço formatado
     const fmtAddr = (a) => {
       if (!a) return ''
       const parts = [
@@ -185,49 +248,39 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
   <style>
     * { margin:0; padding:0; box-sizing:border-box }
     body { font-family: Arial, sans-serif; font-size: 13px; color: #1a1a1a; background: #fff; padding: 28px 32px }
-    /* ── Cabeçalho ── */
     .header { display:flex; justify-content:space-between; align-items:flex-start; padding-bottom: 18px; border-bottom: 2px solid #1a1a1a; margin-bottom: 20px }
     .company-name { font-size: 22px; font-weight: 800; color: #1a1a1a }
     .company-meta { font-size: 11px; color: #555; margin-top: 4px; line-height: 1.6 }
     .doc-info { text-align: right }
     .doc-number { font-size: 20px; font-weight: 700; color: #e05c00 }
     .doc-date { font-size: 11px; color: #666; margin-top: 4px; line-height: 1.6 }
-    .status-badge { display:inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight:700;
-                    border: 1px solid #ccc; margin-top: 5px }
-    /* ── Grid 2 colunas ── */
+    .status-badge { display:inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight:700; border: 1px solid #ccc; margin-top: 5px }
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px }
     .box { border: 1px solid #ddd; border-radius: 6px; padding: 12px 14px }
     .box-title { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: #888; font-weight: 700; margin-bottom: 6px }
     .box-name { font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 3px }
     .box-line { font-size: 11.5px; color: #444; line-height: 1.6 }
-    /* ── Tabela de itens ── */
     table { width: 100%; border-collapse: collapse; margin-bottom: 12px }
     thead tr { background: #f0f0f0 }
     th { padding: 9px 10px; text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: #555; font-weight: 700 }
     td { padding: 9px 10px; border-bottom: 1px solid #ececec; font-size: 12.5px; color: #1a1a1a }
     tbody tr:last-child td { border-bottom: none }
-    /* ── Totais ── */
     .totals-wrap { display:flex; justify-content:flex-end; margin-bottom: 16px }
     .totals { width: 260px }
     .totals td { border: none; padding: 4px 8px; font-size: 12.5px }
     .totals .sep td { border-top: 1px solid #ddd; padding-top: 8px }
     .totals .grand td { font-size: 15px; font-weight: 700; border-top: 2px solid #1a1a1a; padding-top: 8px }
-    /* ── Pagamentos ── */
     .pay-section { border: 1px solid #ddd; border-radius: 6px; padding: 12px 14px; margin-bottom: 16px }
     .pay-row { display:flex; justify-content:space-between; font-size: 12px; padding: 4px 0; border-bottom: 1px solid #f0f0f0 }
     .pay-row:last-child { border-bottom: none }
     .pay-total { display:flex; justify-content:space-between; font-size: 13px; font-weight: 700; margin-top: 8px; padding-top: 6px; border-top: 1px solid #ddd }
-    /* ── Observações ── */
     .notes { border: 1px solid #ddd; border-radius: 6px; padding: 12px 14px; margin-bottom: 20px }
-    /* ── Assinaturas ── */
     .sigs { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px }
     .sig-line { border-top: 1px solid #888; padding-top: 6px; font-size: 11px; color: #555; text-align: center }
     @media print { body { padding: 16px 20px } @page { margin: 10mm } }
   </style>
 </head>
 <body>
-
-  <!-- ── Cabeçalho ── -->
   <div class="header">
     <div>
       <div class="company-name">${co?.name ?? 'Serralheiro'}</div>
@@ -247,8 +300,6 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
       <div class="status-badge">${STATUS[budget.status]?.label ?? budget.status}</div>
     </div>
   </div>
-
-  <!-- ── Partes ── -->
   <div class="grid2">
     <div class="box">
       <div class="box-title">Cliente</div>
@@ -267,8 +318,6 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
       ${co?.address ? `<div class="box-line" style="margin-top:4px">${fmtAddr(co.address)}</div>` : ''}
     </div>
   </div>
-
-  <!-- ── Itens ── -->
   <table>
     <thead>
       <tr>
@@ -290,8 +339,6 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
       </tr>`).join('')}
     </tbody>
   </table>
-
-  <!-- ── Totais ── -->
   <div class="totals-wrap">
     <table class="totals">
       <tr><td style="color:#555">Subtotal</td><td style="text-align:right">${fmt(budget.subtotal)}</td></tr>
@@ -303,8 +350,6 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
       ` : ''}
     </table>
   </div>
-
-  <!-- ── Pagamentos (se houver) ── -->
   ${payments.length > 0 ? `
   <div class="pay-section">
     <div class="box-title" style="margin-bottom:8px">Pagamentos Registrados</div>
@@ -315,24 +360,15 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
     }).join('')}
     ${budget.paymentStatus ? `<div class="pay-total"><span>${paidLabel[budget.paymentStatus] || ''}</span><span>${fmt(budget.totalPaid ?? 0)}</span></div>` : ''}
   </div>` : ''}
-
-  <!-- ── Observações ── -->
   ${budget.notes ? `
   <div class="notes">
     <div class="box-title" style="margin-bottom:6px">Observações</div>
     <p style="font-size:12.5px;color:#333;line-height:1.6">${budget.notes}</p>
   </div>` : ''}
-
-  <!-- ── Assinaturas ── -->
   <div class="sigs">
-    <div>
-      <div class="sig-line">${co?.name ?? 'Empresa'}</div>
-    </div>
-    <div>
-      <div class="sig-line">${cl?.name ?? 'Cliente'}</div>
-    </div>
+    <div><div class="sig-line">${co?.name ?? 'Empresa'}</div></div>
+    <div><div class="sig-line">${cl?.name ?? 'Cliente'}</div></div>
   </div>
-
 </body>
 </html>`
     w.document.write(html)
@@ -359,7 +395,7 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             <button onClick={handlePrint}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium"
               style={{ background: 'var(--c-bg2)', color: 'var(--c-tx1)' }}>
@@ -377,8 +413,7 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
                   window.open(`https://wa.me/${num}?text=${msg}`, '_blank')
                 }}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium"
-                style={{ background: 'rgba(34,197,94,0.12)', color: '#22c55e' }}
-                title="Enviar via WhatsApp">
+                style={{ background: 'rgba(34,197,94,0.12)', color: '#22c55e' }}>
                 <MessageCircle size={16} /> WhatsApp
               </button>
             )}
@@ -389,15 +424,13 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
                   window.location.href = `/dashboard/ordens-servico?budgetId=${budget._id}`
                 }}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium"
-                style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316' }}
-                title="Criar Ordem de Serviço">
+                style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316' }}>
                 <ClipboardList size={16} /> Gerar OS
               </button>
             )}
             <button onClick={() => onDuplicate(budget._id)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium"
-              style={{ background: 'var(--c-bg2)', color: 'var(--c-tx1)' }}
-              title="Duplicar orçamento">
+              style={{ background: 'var(--c-bg2)', color: 'var(--c-tx1)' }}>
               <Copy size={16} /> Duplicar
             </button>
             {budget.status === 'rascunho' && (
@@ -476,36 +509,70 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
             </div>
           )}
 
-          {/* Mudar status */}
-          {budget.status === 'rascunho' && (
-            <div className="flex gap-3 pt-2">
-              <button onClick={() => onStatusChange(budget._id, 'enviado')}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                style={{ background: 'rgba(59,130,246,0.15)', color: '#60a5fa' }}>
-                Marcar como Enviado
-              </button>
-            </div>
-          )}
-          {budget.status === 'enviado' && (
-            <div className="flex gap-3 pt-2">
-              <button onClick={() => onStatusChange(budget._id, 'aprovado')}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e' }}>
-                Aprovado
-              </button>
-              <button onClick={() => onStatusChange(budget._id, 'rejeitado')}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
-                Rejeitado
-              </button>
+          {/* ─── Fluxo de status ─── */}
+          {(budget.status === 'rascunho' || budget.status === 'enviado') && (
+            <div className="rounded-xl p-4" style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd0)' }}>
+              <p className="text-xs font-semibold uppercase mb-3" style={{ color: 'var(--c-tx3)' }}>
+                Progressão do Orçamento
+              </p>
+              {/* Linha de status */}
+              <div className="flex items-center gap-2 mb-4">
+                {['rascunho','enviado','aprovado'].map((s, i) => (
+                  <div key={s} className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                        style={{
+                          background: budget.status === s ? STATUS[s].bg : (i < ['rascunho','enviado','aprovado'].indexOf(budget.status) ? 'rgba(34,197,94,0.2)' : 'var(--c-bg0)'),
+                          color: budget.status === s ? STATUS[s].color : (i < ['rascunho','enviado','aprovado'].indexOf(budget.status) ? '#22c55e' : 'var(--c-tx3)'),
+                          border: `1px solid ${budget.status === s ? STATUS[s].color : 'var(--c-bd0)'}`,
+                        }}>
+                        {i + 1}
+                      </div>
+                      <span className="text-xs" style={{ color: budget.status === s ? STATUS[s].color : 'var(--c-tx3)' }}>
+                        {STATUS[s].label}
+                      </span>
+                    </div>
+                    {i < 2 && <div className="w-6 h-px" style={{ background: 'var(--c-bd0)' }} />}
+                  </div>
+                ))}
+              </div>
+              {budget.status === 'rascunho' && (
+                <div className="flex gap-3">
+                  <button onClick={() => onStatusChange(budget._id, 'enviado')}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                    style={{ background: 'rgba(59,130,246,0.15)', color: '#60a5fa' }}>
+                    Marcar como Enviado →
+                  </button>
+                  <button onClick={() => onStatusChange(budget._id, 'aprovado')}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                    style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e' }}>
+                    Aprovar direto ✓
+                  </button>
+                </div>
+              )}
+              {budget.status === 'enviado' && (
+                <div className="flex gap-3">
+                  <button onClick={() => onStatusChange(budget._id, 'aprovado')}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                    style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e' }}>
+                    Aprovar ✓
+                  </button>
+                  <button onClick={() => onStatusChange(budget._id, 'rejeitado')}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                    style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
+                    Rejeitar ✗
+                  </button>
+                </div>
+              )}
+              <p className="text-xs mt-3" style={{ color: 'var(--c-tx3)' }}>
+                💡 Após aprovar, você poderá registrar pagamentos e gerar Ordem de Serviço.
+              </p>
             </div>
           )}
 
           {/* ─── Pagamentos (somente orçamentos aprovados) ─── */}
           {budget.status === 'aprovado' && (
             <div className="space-y-4 pt-4" style={{ borderTop: '1px solid var(--c-bd0)' }}>
-
-              {/* Cabeçalho */}
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--c-tx3)' }}>
                   Pagamentos
@@ -563,7 +630,6 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
                 </div>
               )}
 
-              {/* Botão / formulário */}
               {!showPayForm && (budget.totalPaid ?? 0) < budget.total && (
                 <button onClick={() => setShowPayForm(true)}
                   className="flex items-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold justify-center"
@@ -576,10 +642,7 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
                 <PaymentForm
                   budget={budget}
                   onClose={() => setShowPayForm(false)}
-                  onSaved={() => {
-                    loadPayments()
-                    onPaymentAdded?.()
-                  }}
+                  onSaved={() => { loadPayments(); onPaymentAdded?.() }}
                 />
               )}
             </div>
@@ -607,7 +670,8 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
         }))
       : [{ productId: '', description: '', unit: 'un', quantity: 1, unitPrice: 0 }]
   )
-  const [discount, setDiscount] = useState(budget?.discount ?? 0)
+  const [discountType, setDiscountType] = useState('R$')
+  const [discountInput, setDiscountInput] = useState(String(budget?.discount ?? 0))
   const [notes, setNotes] = useState(budget?.notes ?? '')
   const [validUntil, setValidUntil] = useState(
     budget?.validUntil ? new Date(budget.validUntil).toISOString().split('T')[0] : ''
@@ -617,8 +681,8 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
 
   useEffect(() => {
     Promise.all([
-      api.get('/s/clients?limit=200'),
-      api.get('/s/products?limit=200'),
+      api.get('/s/clients?limit=500'),
+      api.get('/s/products?limit=500'),
     ]).then(([c, p]) => {
       setClients(c.data.data.clients)
       setProducts(p.data.data.products)
@@ -629,7 +693,6 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
     setItems(prev => {
       const next = [...prev]
       next[index] = { ...next[index], [field]: value }
-      // Ao selecionar produto, preenche descrição, unidade e preço
       if (field === 'productId' && value) {
         const prod = products.find(p => p._id === value)
         if (prod) {
@@ -650,7 +713,24 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
   const removeItem = (index) => setItems(prev => prev.filter((_, i) => i !== index))
 
   const subtotal = items.reduce((s, i) => s + (Number(i.quantity) * Number(i.unitPrice)), 0)
-  const total = Math.max(0, subtotal - Number(discount))
+
+  // Calcula desconto em R$ independente do tipo selecionado
+  const discountValue = discountType === '%'
+    ? Math.min(subtotal, (subtotal * Math.max(0, Number(discountInput) || 0)) / 100)
+    : Math.max(0, Number(discountInput) || 0)
+
+  const total = Math.max(0, subtotal - discountValue)
+
+  const handleDiscountTypeChange = (type) => {
+    if (type === discountType) return
+    if (type === '%') {
+      const pct = subtotal > 0 ? ((discountValue / subtotal) * 100).toFixed(2) : '0'
+      setDiscountInput(pct)
+    } else {
+      setDiscountInput(discountValue.toFixed(2))
+    }
+    setDiscountType(type)
+  }
 
   const handleSave = async () => {
     setError('')
@@ -660,7 +740,7 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
 
     setSaving(true)
     try {
-      const payload = { clientId, items, discount: Number(discount), notes, validUntil }
+      const payload = { clientId, items, discount: discountValue, notes, validUntil }
       if (isEdit) {
         await api.put(`/s/budgets/${budget._id}`, payload)
         toast.success('Orçamento atualizado!')
@@ -696,10 +776,15 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
           {/* Cliente + Validade */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Cliente *">
-              <select value={clientId} onChange={e => setClientId(e.target.value)} style={inputCls(!clientId && error)}>
-                <option value="">Selecione o cliente...</option>
-                {clients.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-              </select>
+              <Autocomplete
+                options={clients}
+                value={clientId}
+                onChange={setClientId}
+                placeholder="Buscar cliente..."
+                getKey={o => o._id}
+                getLabel={o => o.name + (o.phone ? ` — ${o.phone}` : '')}
+                error={!clientId && !!error}
+              />
             </Field>
             <Field label="Válido até">
               <input type="date" value={validUntil} onChange={e => setValidUntil(e.target.value)} style={inputCls(false)} />
@@ -721,14 +806,17 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
               {items.map((item, idx) => (
                 <div key={idx} className="rounded-xl p-4 space-y-3" style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd0)' }}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Produto (opcional) */}
+                    {/* Produto do catálogo */}
                     <div>
                       <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx2)' }}>Produto do catálogo (opcional)</label>
-                      <select value={item.productId} onChange={e => setItem(idx, 'productId', e.target.value)}
-                        style={{ ...inputCls(false), fontSize: 13 }}>
-                        <option value="">Digitar manualmente...</option>
-                        {products.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
-                      </select>
+                      <Autocomplete
+                        options={products}
+                        value={item.productId}
+                        onChange={v => setItem(idx, 'productId', v)}
+                        placeholder="Buscar no catálogo..."
+                        getKey={o => o._id}
+                        getLabel={o => o.name + (o.price ? ` — ${fmt(o.price)}` : '')}
+                      />
                     </div>
                     {/* Descrição */}
                     <div>
@@ -788,10 +876,39 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
               <div className="flex justify-between text-sm" style={{ color: 'var(--c-tx2)' }}>
                 <span>Subtotal</span><span className="font-medium" style={{ color: 'var(--c-tx0)' }}>{fmt(subtotal)}</span>
               </div>
-              <Field label="Desconto (R$)">
-                <input type="number" min="0" step="0.01" value={discount}
-                  onChange={e => setDiscount(e.target.value)} style={inputCls(false)} />
-              </Field>
+
+              {/* Campo desconto com toggle R$/% */}
+              <div>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Desconto</label>
+                <div className="flex gap-2">
+                  {/* Toggle R$  / % */}
+                  <div className="flex rounded-xl overflow-hidden flex-shrink-0"
+                    style={{ border: '1px solid var(--c-bd1)' }}>
+                    {['R$', '%'].map(t => (
+                      <button key={t} onClick={() => handleDiscountTypeChange(t)}
+                        className="px-3 py-2.5 text-sm font-semibold transition-all"
+                        style={{
+                          background: discountType === t ? '#f97316' : 'var(--c-bg2)',
+                          color: discountType === t ? 'white' : 'var(--c-tx2)',
+                        }}>
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                  <input type="number" min="0" step="0.01"
+                    max={discountType === '%' ? 100 : undefined}
+                    value={discountInput}
+                    onChange={e => setDiscountInput(e.target.value)}
+                    style={{ ...inputCls(false), flex: 1 }}
+                    placeholder={discountType === '%' ? '0.00 %' : '0,00'} />
+                </div>
+                {discountType === '%' && discountValue > 0 && (
+                  <p className="text-xs mt-1" style={{ color: 'var(--c-tx3)' }}>
+                    = {fmt(discountValue)} de desconto
+                  </p>
+                )}
+              </div>
+
               <div className="flex justify-between text-xl font-bold pt-2" style={{ borderTop: '1px solid var(--c-bd0)', color: 'var(--c-tx0)' }}>
                 <span>Total</span>
                 <span style={{ color: '#f97316' }}>{fmt(total)}</span>
@@ -935,10 +1052,7 @@ const OrcamentosPage = () => {
   const reloadView = useCallback(async () => {
     if (!viewBudget?._id) return
     try {
-      const [budgetRes] = await Promise.all([
-        api.get(`/s/budgets/${viewBudget._id}`),
-        fetchBudgets(),
-      ])
+      const [budgetRes] = await Promise.all([api.get(`/s/budgets/${viewBudget._id}`), fetchBudgets()])
       setViewBudget(budgetRes.data.data.budget)
     } catch { /* silencia */ }
   }, [viewBudget?._id])
@@ -954,8 +1068,7 @@ const OrcamentosPage = () => {
         <div className="flex items-center gap-3">
           <button onClick={exportCSV}
             className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-medium"
-            style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: 'var(--c-tx2)' }}
-            title="Exportar CSV">
+            style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: 'var(--c-tx2)' }}>
             <Download size={16} /> CSV
           </button>
           <button onClick={() => setShowCreate(true)}
@@ -1035,77 +1148,93 @@ const OrcamentosPage = () => {
                 {budgets.map(b => {
                   const isVencido = b.validUntil && b.status === 'enviado' && new Date(b.validUntil) < new Date()
                   return (
-                  <tr key={b._id} style={{ borderBottom: '1px solid var(--c-bd0)' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'var(--c-bg2)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <td className="px-5 py-4">
-                      <span className="text-sm font-bold" style={{ color: '#f97316' }}>
-                        ORC-{String(b.number).padStart(3, '0')}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-sm font-medium" style={{ color: 'var(--c-tx0)' }}>
-                      {b.client?.name ?? '—'}
-                    </td>
-                    <td className="px-5 py-4 text-sm" style={{ color: 'var(--c-tx2)' }}>
-                      {fmtDate(b.createdAt)}
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm" style={{ color: isVencido ? '#ef4444' : 'var(--c-tx2)' }}>
-                          {fmtDate(b.validUntil)}
+                    <tr key={b._id} style={{ borderBottom: '1px solid var(--c-bd0)', cursor: 'pointer' }}
+                      onClick={() => handleView(b._id)}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--c-bg2)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      <td className="px-5 py-4">
+                        <span className="text-sm font-bold" style={{ color: '#f97316' }}>
+                          ORC-{String(b.number).padStart(3, '0')}
                         </span>
-                        {isVencido && (
-                          <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-                            style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
-                            VENCIDO
+                      </td>
+                      <td className="px-5 py-4 text-sm font-medium" style={{ color: 'var(--c-tx0)' }}>
+                        {b.client?.name ?? '—'}
+                      </td>
+                      <td className="px-5 py-4 text-sm" style={{ color: 'var(--c-tx2)' }}>
+                        {fmtDate(b.createdAt)}
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm" style={{ color: isVencido ? '#ef4444' : 'var(--c-tx2)' }}>
+                            {fmtDate(b.validUntil)}
                           </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-base font-bold" style={{ color: 'var(--c-tx0)' }}>
-                      {fmt(b.total)}
-                    </td>
-                    <td className="px-5 py-4"><StatusBadge status={b.status} /></td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => handleView(b._id)} className="p-2 rounded-lg"
-                          style={{ background: 'rgba(249,115,22,0.1)', color: '#f97316' }} title="Visualizar">
-                          <Eye size={15} />
-                        </button>
-                        <button onClick={() => handleDuplicate(b._id)} className="p-2 rounded-lg"
-                          style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }} title="Duplicar">
-                          <Copy size={15} />
-                        </button>
-                        {b.client?.phone && (
-                          <button
-                            onClick={() => {
-                              const phone = b.client.phone.replace(/\D/g, '')
-                              const num = phone.startsWith('55') ? phone : `55${phone}`
-                              const orcNum = `ORC-${String(b.number).padStart(3, '0')}`
-                              const msg = encodeURIComponent(`Olá ${b.client.name}! Segue o orçamento *${orcNum}* no valor de *${fmt(b.total)}*. Qualquer dúvida estamos à disposição!`)
-                              window.open(`https://wa.me/${num}?text=${msg}`, '_blank')
-                            }}
-                            className="p-2 rounded-lg"
-                            style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e' }} title="WhatsApp">
-                            <MessageCircle size={15} />
+                          {isVencido && (
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                              style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
+                              VENCIDO
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 text-base font-bold" style={{ color: 'var(--c-tx0)' }}>
+                        {fmt(b.total)}
+                      </td>
+                      <td className="px-5 py-4"><StatusBadge status={b.status} /></td>
+                      <td className="px-5 py-4" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-2">
+                          {/* Aprovar rápido para rascunho/enviado */}
+                          {(b.status === 'rascunho' || b.status === 'enviado') && (
+                            <button
+                              onClick={() => handleStatusChange(b._id, 'aprovado')}
+                              className="p-2 rounded-lg"
+                              style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e' }}
+                              title="Aprovar orçamento">
+                              <CheckCircle size={15} />
+                            </button>
+                          )}
+                          {b.status === 'aprovado' && (
+                            <button
+                              onClick={() => { window.location.href = `/dashboard/ordens-servico?budgetId=${b._id}` }}
+                              className="p-2 rounded-lg"
+                              style={{ background: 'rgba(249,115,22,0.1)', color: '#f97316' }}
+                              title="Gerar OS">
+                              <ClipboardList size={15} />
+                            </button>
+                          )}
+                          <button onClick={() => handleDuplicate(b._id)} className="p-2 rounded-lg"
+                            style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }} title="Duplicar">
+                            <Copy size={15} />
                           </button>
-                        )}
-                        {b.status === 'rascunho' && (
-                          <>
-                            <button onClick={() => setEditBudget(b)} className="p-2 rounded-lg"
-                              style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }} title="Editar">
-                              <Pencil size={15} />
+                          {b.client?.phone && (
+                            <button
+                              onClick={() => {
+                                const phone = b.client.phone.replace(/\D/g, '')
+                                const num = phone.startsWith('55') ? phone : `55${phone}`
+                                const orcNum = `ORC-${String(b.number).padStart(3, '0')}`
+                                const msg = encodeURIComponent(`Olá ${b.client.name}! Segue o orçamento *${orcNum}* no valor de *${fmt(b.total)}*. Qualquer dúvida estamos à disposição!`)
+                                window.open(`https://wa.me/${num}?text=${msg}`, '_blank')
+                              }}
+                              className="p-2 rounded-lg"
+                              style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e' }} title="WhatsApp">
+                              <MessageCircle size={15} />
                             </button>
-                            <button onClick={() => handleDelete(b._id)} className="p-2 rounded-lg"
-                              style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }} title="Excluir">
-                              <Trash2 size={15} />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                )
+                          )}
+                          {b.status === 'rascunho' && (
+                            <>
+                              <button onClick={() => setEditBudget(b)} className="p-2 rounded-lg"
+                                style={{ background: 'var(--c-bg2)', color: 'var(--c-tx2)' }} title="Editar">
+                                <Pencil size={15} />
+                              </button>
+                              <button onClick={() => handleDelete(b._id)} className="p-2 rounded-lg"
+                                style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }} title="Excluir">
+                                <Trash2 size={15} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
                 })}
               </tbody>
             </table>
@@ -1116,56 +1245,62 @@ const OrcamentosPage = () => {
             {budgets.map(b => {
               const isVencidoMobile = b.validUntil && b.status === 'enviado' && new Date(b.validUntil) < new Date()
               return (
-              <div key={b._id} className="rounded-2xl p-5" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
-                <div className="flex items-start justify-between gap-2 mb-3">
-                  <div>
-                    <p className="text-base font-bold" style={{ color: '#f97316' }}>
-                      ORC-{String(b.number).padStart(3, '0')}
-                    </p>
-                    <p className="text-sm font-medium mt-0.5" style={{ color: 'var(--c-tx0)' }}>{b.client?.name}</p>
-                    <p className="text-sm mt-0.5" style={{ color: 'var(--c-tx3)' }}>{fmtDate(b.createdAt)}</p>
+                <div key={b._id} className="rounded-2xl p-5" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', cursor: 'pointer' }}
+                  onClick={() => handleView(b._id)}>
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div>
+                      <p className="text-base font-bold" style={{ color: '#f97316' }}>
+                        ORC-{String(b.number).padStart(3, '0')}
+                      </p>
+                      <p className="text-sm font-medium mt-0.5" style={{ color: 'var(--c-tx0)' }}>{b.client?.name}</p>
+                      <p className="text-sm mt-0.5" style={{ color: 'var(--c-tx3)' }}>{fmtDate(b.createdAt)}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <StatusBadge status={b.status} />
+                      {isVencidoMobile && (
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                          style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
+                          VENCIDO
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <StatusBadge status={b.status} />
-                    {isVencidoMobile && (
-                      <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-                        style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
-                        VENCIDO
-                      </span>
-                    )}
+                  <div className="flex items-center justify-between mt-3" onClick={e => e.stopPropagation()}>
+                    <p className="text-xl font-bold" style={{ color: 'var(--c-tx0)' }}>{fmt(b.total)}</p>
+                    <div className="flex gap-2">
+                      {(b.status === 'rascunho' || b.status === 'enviado') && (
+                        <button
+                          onClick={() => handleStatusChange(b._id, 'aprovado')}
+                          className="p-2.5 rounded-xl"
+                          style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e' }}
+                          title="Aprovar">
+                          <CheckCircle size={16} />
+                        </button>
+                      )}
+                      {b.client?.phone && (
+                        <button
+                          onClick={() => {
+                            const phone = b.client.phone.replace(/\D/g, '')
+                            const num = phone.startsWith('55') ? phone : `55${phone}`
+                            const orcNum = `ORC-${String(b.number).padStart(3, '0')}`
+                            const msg = encodeURIComponent(`Olá ${b.client.name}! Segue o orçamento *${orcNum}* no valor de *${fmt(b.total)}*. Qualquer dúvida estamos à disposição!`)
+                            window.open(`https://wa.me/${num}?text=${msg}`, '_blank')
+                          }}
+                          className="p-2.5 rounded-xl"
+                          style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e' }}>
+                          <MessageCircle size={16} />
+                        </button>
+                      )}
+                      {b.status === 'rascunho' && (
+                        <button onClick={() => handleDelete(b._id)} className="p-2.5 rounded-xl"
+                          style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center justify-between mt-3">
-                  <p className="text-xl font-bold" style={{ color: 'var(--c-tx0)' }}>{fmt(b.total)}</p>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleView(b._id)} className="p-2.5 rounded-xl"
-                      style={{ background: 'rgba(249,115,22,0.1)', color: '#f97316' }}>
-                      <Eye size={16} />
-                    </button>
-                    {b.client?.phone && (
-                      <button
-                        onClick={() => {
-                          const phone = b.client.phone.replace(/\D/g, '')
-                          const num = phone.startsWith('55') ? phone : `55${phone}`
-                          const orcNum = `ORC-${String(b.number).padStart(3, '0')}`
-                          const msg = encodeURIComponent(`Olá ${b.client.name}! Segue o orçamento *${orcNum}* no valor de *${fmt(b.total)}*. Qualquer dúvida estamos à disposição!`)
-                          window.open(`https://wa.me/${num}?text=${msg}`, '_blank')
-                        }}
-                        className="p-2.5 rounded-xl"
-                        style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e' }}>
-                        <MessageCircle size={16} />
-                      </button>
-                    )}
-                    {b.status === 'rascunho' && (
-                      <button onClick={() => handleDelete(b._id)} className="p-2.5 rounded-xl"
-                        style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )
+              )
             })}
           </div>
 

@@ -23,6 +23,7 @@ import FinanceiroPage from './pages/serralheiro/FinanceiroPage'
 import ConfiguracoesPage from './pages/serralheiro/ConfiguracoesPage'
 import FuncionariosPage from './pages/serralheiro/FuncionariosPage'
 import OrdensServicoPage from './pages/serralheiro/OrdensServicoPage'
+import FiadosPage from './pages/serralheiro/FiadosPage'
 
 function App() {
   return (
@@ -56,6 +57,7 @@ function App() {
             <Route path="usuarios" element={<UsuariosPage />} />
             <Route path="funcionarios" element={<FuncionariosPage />} />
             <Route path="ordens-servico" element={<OrdensServicoPage />} />
+            <Route path="fiado" element={<FiadosPage />} />
             <Route path="configuracoes" element={<ConfiguracoesPage />} />
           </Route>
 
