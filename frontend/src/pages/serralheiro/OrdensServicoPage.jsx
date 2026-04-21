@@ -4,6 +4,7 @@ import useAutoRefresh from '../../hooks/useAutoRefresh'
 import {
   Plus, Search, ClipboardList, X, Pencil, Trash2, Printer,
   Clock, Wrench, CheckCircle2, XCircle, ChevronRight, User,
+  Phone, MapPin, MessageCircle, DollarSign,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
@@ -190,11 +191,218 @@ const OSModal = ({ os, onClose, onSaved, initialBudgetId = '' }) => {
   )
 }
 
+// ─── Helper WhatsApp ──────────────────────────────────────────────────────────
+const whatsappUrl = (phone) => {
+  const digits = (phone ?? '').replace(/\D/g, '')
+  const num = digits.startsWith('55') ? digits : `55${digits}`
+  return `https://wa.me/${num}`
+}
+
+const fmtAddr = (a) => {
+  if (!a) return ''
+  return [
+    a.street && a.number ? `${a.street}, ${a.number}` : a.street,
+    a.neighborhood, a.city && a.state ? `${a.city} — ${a.state}` : a.city,
+  ].filter(Boolean).join(' · ')
+}
+
+// ─── Modal de Pagamento ao Concluir OS ───────────────────────────────────────
+const PAYMENT_METHODS = [
+  { value: 'dinheiro',       label: 'Dinheiro' },
+  { value: 'pix',            label: 'PIX' },
+  { value: 'cartão_débito',  label: 'Cartão Débito' },
+  { value: 'cartão_crédito', label: 'Cartão Crédito' },
+  { value: 'transferência',  label: 'Transferência' },
+  { value: 'fiado',          label: 'Fiado (receber depois)' },
+]
+
+const inp2 = (err) => ({
+  background: 'var(--c-bg2)', border: `1px solid ${err ? '#ef4444' : 'var(--c-bd1)'}`,
+  color: 'var(--c-tx0)', borderRadius: 10, padding: '9px 12px', fontSize: 13,
+  width: '100%', outline: 'none',
+})
+
+const newEntry = () => ({ id: Date.now(), method: 'pix', amount: '', dueDate: '' })
+
+const PaymentModal = ({ os, onClose, onDone }) => {
+  const budgetTotal = os?.budget?.total ?? 0
+  const [entries, setEntries] = useState([{ ...newEntry(), amount: String(budgetTotal) }])
+  const [saving, setSaving]   = useState(false)
+  const [error, setError]     = useState('')
+
+  const totalEntries = entries.reduce((s, e) => s + (Number(e.amount) || 0), 0)
+  const remaining    = budgetTotal - totalEntries
+  const allCovered   = Math.abs(remaining) < 0.01
+
+  const updEntry = (id, field, val) =>
+    setEntries(prev => prev.map(e => e.id === id ? { ...e, [field]: val } : e))
+
+  const addEntry = () => {
+    const left = budgetTotal - totalEntries
+    setEntries(prev => [...prev, { ...newEntry(), amount: left > 0 ? String(left.toFixed(2)) : '' }])
+  }
+
+  const removeEntry = (id) => setEntries(prev => prev.filter(e => e.id !== id))
+
+  const handleConfirm = async () => {
+    setError('')
+    for (const e of entries) {
+      if (!Number(e.amount) || Number(e.amount) <= 0) return setError('Todos os valores devem ser maiores que zero.')
+      if (e.method === 'fiado' && !e.dueDate) return setError('Informe a data de vencimento para pagamentos em fiado.')
+    }
+    setSaving(true)
+    try {
+      // Registra cada forma de pagamento sequencialmente
+      for (const e of entries) {
+        await api.post('/s/payments', {
+          budgetId: os.budget._id,
+          method: e.method,
+          amount: Number(e.amount),
+          dueDate: e.method === 'fiado' ? e.dueDate : undefined,
+        })
+      }
+      // Marca OS como concluída
+      await api.put(`/s/os/${os._id}`, { status: 'concluido' })
+      const hasFiado = entries.some(e => e.method === 'fiado')
+      const hasVista = entries.some(e => e.method !== 'fiado')
+      const msg = hasFiado && hasVista
+        ? 'OS concluída! Parte no financeiro, parte no fiado.'
+        : hasFiado ? 'OS concluída! Fiado registrado.'
+        : 'OS concluída e receita lançada no financeiro!'
+      toast.success(msg)
+      onDone()
+      onClose()
+    } catch (e) {
+      setError(e.response?.data?.message || 'Erro ao registrar pagamento.')
+    } finally { setSaving(false) }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto" style={{ background: 'rgba(0,0,0,0.8)' }}>
+      <div className="w-full max-w-md rounded-2xl my-6" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+        <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+          <div>
+            <h2 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>Recebimento do Serviço</h2>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>
+              OS-{String(os.number).padStart(3,'0')} · {os.client?.name}
+            </p>
+          </div>
+          <button onClick={onClose} style={{ color: 'var(--c-tx3)', background: 'var(--c-bg2)', border: 'none', borderRadius: 8, padding: 6, cursor: 'pointer' }}>
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-4">
+          {/* Barra de progresso do valor */}
+          <div className="rounded-xl p-3" style={{ background: 'var(--c-bg0)', border: '1px solid var(--c-bd0)' }}>
+            <div className="flex justify-between mb-2">
+              <span style={{ fontSize: 12, color: 'var(--c-tx3)' }}>Total do orçamento</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#f97316' }}>{fmt(budgetTotal)}</span>
+            </div>
+            <div style={{ height: 6, borderRadius: 4, background: 'var(--c-bd0)', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: 4, transition: '0.3s',
+                background: totalEntries > budgetTotal ? '#ef4444' : allCovered ? '#22c55e' : '#f97316',
+                width: `${Math.min((totalEntries / budgetTotal) * 100, 100)}%`,
+              }} />
+            </div>
+            <div className="flex justify-between mt-2">
+              <span style={{ fontSize: 11, color: 'var(--c-tx3)' }}>Coberto: {fmt(totalEntries)}</span>
+              <span style={{ fontSize: 11, color: remaining > 0 ? '#eab308' : remaining < 0 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>
+                {remaining > 0 ? `Faltam ${fmt(remaining)}` : remaining < 0 ? `Excesso de ${fmt(-remaining)}` : '✓ Valor coberto'}
+              </span>
+            </div>
+          </div>
+
+          {/* Entradas de pagamento */}
+          <div className="space-y-3">
+            {entries.map((entry, idx) => (
+              <div key={entry.id} className="rounded-xl p-4" style={{ background: 'var(--c-bg0)', border: '1px solid var(--c-bd0)' }}>
+                <div className="flex items-center justify-between mb-3">
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--c-tx2)' }}>
+                    {idx === 0 ? 'Pagamento principal' : `Pagamento ${idx + 1}`}
+                  </span>
+                  {entries.length > 1 && (
+                    <button onClick={() => removeEntry(entry.id)}
+                      style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Forma de pagamento */}
+                <div className="grid grid-cols-3 gap-1.5 mb-3">
+                  {PAYMENT_METHODS.map(m => (
+                    <button key={m.value} onClick={() => updEntry(entry.id, 'method', m.value)}
+                      style={{
+                        padding: '6px 4px', borderRadius: 8, fontSize: 11, fontWeight: 500,
+                        cursor: 'pointer', border: `1.5px solid ${entry.method === m.value ? '#f97316' : 'var(--c-bd1)'}`,
+                        background: entry.method === m.value ? 'rgba(249,115,22,0.1)' : 'var(--c-bg2)',
+                        color: entry.method === m.value ? '#f97316' : 'var(--c-tx2)',
+                        textAlign: 'center', lineHeight: 1.3,
+                      }}>
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Valor */}
+                <div className="flex gap-2">
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: 11, color: 'var(--c-tx3)', display: 'block', marginBottom: 4 }}>Valor (R$)</label>
+                    <input type="number" value={entry.amount} min="0" step="0.01"
+                      onChange={e => updEntry(entry.id, 'amount', e.target.value)}
+                      style={inp2(!entry.amount)} placeholder="0,00" />
+                  </div>
+                  {entry.method === 'fiado' && (
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: 11, color: 'var(--c-tx3)', display: 'block', marginBottom: 4 }}>Vencimento *</label>
+                      <input type="date" value={entry.dueDate}
+                        onChange={e => updEntry(entry.id, 'dueDate', e.target.value)}
+                        style={inp2(!entry.dueDate && !!error)} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Botão adicionar forma */}
+          <button onClick={addEntry}
+            style={{
+              width: '100%', padding: '8px 0', borderRadius: 10, fontSize: 12, fontWeight: 500,
+              background: 'var(--c-bg0)', color: 'var(--c-tx2)', border: '1.5px dashed var(--c-bd1)',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            }}>
+            <Plus size={14} /> Adicionar outra forma de pagamento
+          </button>
+
+          {error && (
+            <p style={{ fontSize: 12, background: 'rgba(239,68,68,0.1)', color: '#ef4444', borderRadius: 8, padding: '8px 12px' }}>{error}</p>
+          )}
+
+          <div className="flex gap-3 pt-1">
+            <button onClick={onClose}
+              style={{ flex: 1, padding: '10px 0', borderRadius: 10, background: 'var(--c-bg2)', color: 'var(--c-tx2)', border: '1px solid var(--c-bd1)', cursor: 'pointer', fontSize: 13 }}>
+              Cancelar
+            </button>
+            <button onClick={handleConfirm} disabled={saving}
+              style={{ flex: 2, padding: '10px 0', borderRadius: 10, background: saving ? '#888' : 'linear-gradient(135deg,#22c55e,#16a34a)', color: 'white', border: 'none', cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 600 }}>
+              {saving ? 'Registrando...' : '✓ Confirmar e Concluir OS'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Painel lateral de detalhe da OS ─────────────────────────────────────────
 const OSPanel = ({ osId, onClose, onUpdated, isOwner }) => {
-  const [os, setOs]         = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [os, setOs]             = useState(null)
+  const [loading, setLoading]   = useState(true)
   const [showEdit, setShowEdit] = useState(false)
+  const [showPayment, setShowPayment] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -388,10 +596,10 @@ const OSPanel = ({ osId, onClose, onUpdated, isOwner }) => {
                     </button>
                   )}
                   {os.status === 'em_execucao' && (
-                    <button onClick={() => handleStatus('concluido')}
-                      className="px-3 py-1.5 rounded-xl text-xs font-semibold"
+                    <button onClick={() => setShowPayment(true)}
+                      className="px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5"
                       style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e' }}>
-                      Marcar como Concluído
+                      <DollarSign size={12} /> Concluir e Receber
                     </button>
                   )}
                   {isOwner && (
@@ -419,9 +627,27 @@ const OSPanel = ({ osId, onClose, onUpdated, isOwner }) => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-xs" style={{ color: 'var(--c-tx3)' }}>Cliente</p>
-                  <p className="text-sm font-medium mt-0.5" style={{ color: 'var(--c-tx0)' }}>{os.client?.name}</p>
+                  <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--c-tx0)' }}>{os.client?.name}</p>
                   {os.client?.phone && (
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx2)' }}>{os.client.phone}</p>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <Phone size={10} style={{ color: 'var(--c-tx3)', flexShrink: 0 }} />
+                      <span className="text-xs" style={{ color: 'var(--c-tx2)' }}>{os.client.phone}</span>
+                      <a href={whatsappUrl(os.client.phone)} target="_blank" rel="noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        title="Abrir WhatsApp"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(37,211,102,0.15)', color: '#25d366', fontWeight: 600, textDecoration: 'none' }}>
+                        <MessageCircle size={10} /> WhatsApp
+                      </a>
+                    </div>
+                  )}
+                  {os.client?.email && (
+                    <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--c-tx3)' }}>{os.client.email}</p>
+                  )}
+                  {fmtAddr(os.client?.address) && (
+                    <div className="flex items-start gap-1 mt-1">
+                      <MapPin size={10} style={{ color: 'var(--c-tx3)', flexShrink: 0, marginTop: 1 }} />
+                      <p className="text-xs" style={{ color: 'var(--c-tx3)', lineHeight: 1.4 }}>{fmtAddr(os.client.address)}</p>
+                    </div>
                   )}
                 </div>
                 <div>
@@ -487,6 +713,14 @@ const OSPanel = ({ osId, onClose, onUpdated, isOwner }) => {
           os={os}
           onClose={() => setShowEdit(false)}
           onSaved={() => { setShowEdit(false); load(); onUpdated() }}
+        />
+      )}
+
+      {showPayment && os && (
+        <PaymentModal
+          os={os}
+          onClose={() => setShowPayment(false)}
+          onDone={() => { load(); onUpdated() }}
         />
       )}
     </div>
