@@ -10,13 +10,13 @@ import api from '../../services/api'
 
 const allNavItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/dashboard/orcamentos', label: 'Orçamentos', icon: FileText },
+  { to: '/dashboard/ordens-servico', label: 'Ordens de Serviço', icon: ClipboardList },
+  { to: '/dashboard/agendamentos', label: 'Agendamentos', icon: CalendarDays },
   { to: '/dashboard/clientes', label: 'Clientes', icon: Users },
   { to: '/dashboard/produtos', label: 'Produtos', icon: Package },
-  { to: '/dashboard/orcamentos', label: 'Orçamentos', icon: FileText },
-  { to: '/dashboard/financeiro', label: 'Financeiro', icon: DollarSign },
-  { to: '/dashboard/ordens-servico', label: 'Ordens de Serviço', icon: ClipboardList },
   { to: '/dashboard/fiado', label: 'Fiado', icon: HandCoins },
-  { to: '/dashboard/agendamentos', label: 'Agendamentos', icon: CalendarDays },
+  { to: '/dashboard/financeiro', label: 'Financeiro', icon: DollarSign },
   { to: '/dashboard/funcionarios', label: 'Funcionários', icon: Wrench, ownerOnly: true },
   { to: '/dashboard/usuarios', label: 'Usuários', icon: UserCog, ownerOnly: true },
   { to: '/dashboard/configuracoes', label: 'Configurações', icon: Settings },
