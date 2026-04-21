@@ -436,7 +436,7 @@ const OSPanel = ({ osId, onClose, onUpdated, isOwner }) => {
                 <div>
                   <p className="text-xs" style={{ color: 'var(--c-tx3)' }}>Responsável</p>
                   <p className="text-sm font-medium mt-0.5" style={{ color: 'var(--c-tx0)' }}>
-                    {os.assignedTo?.name ?? os.assignedUserName || <span style={{ color: 'var(--c-tx3)' }}>Não definido</span>}
+                    {(os.assignedTo?.name ?? os.assignedUserName) || <span style={{ color: 'var(--c-tx3)' }}>Não definido</span>}
                   </p>
                   {os.assignedTo?.cargo && (
                     <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx2)' }}>{os.assignedTo.cargo}</p>
