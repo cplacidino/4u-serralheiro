@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import toast from 'react-hot-toast'
 import {
-  LayoutDashboard, Users, Package, FileText, LogOut, Menu, X, UserCog, DollarSign, Bell, Settings, Wrench, ClipboardList, Sun, Moon, HandCoins,
+  LayoutDashboard, Users, Package, FileText, LogOut, Menu, X, UserCog, DollarSign, Bell, Settings, Wrench, ClipboardList, Sun, Moon, HandCoins, CalendarDays,
 } from 'lucide-react'
 import api from '../../services/api'
 
@@ -16,6 +16,7 @@ const allNavItems = [
   { to: '/dashboard/financeiro', label: 'Financeiro', icon: DollarSign },
   { to: '/dashboard/ordens-servico', label: 'Ordens de Serviço', icon: ClipboardList },
   { to: '/dashboard/fiado', label: 'Fiado', icon: HandCoins },
+  { to: '/dashboard/agendamentos', label: 'Agendamentos', icon: CalendarDays },
   { to: '/dashboard/funcionarios', label: 'Funcionários', icon: Wrench, ownerOnly: true },
   { to: '/dashboard/usuarios', label: 'Usuários', icon: UserCog, ownerOnly: true },
   { to: '/dashboard/configuracoes', label: 'Configurações', icon: Settings },

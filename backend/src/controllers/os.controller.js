@@ -67,16 +67,20 @@ const getOS = async (req, res) => {
 const createOS = async (req, res) => {
   try {
     const company = req.user.company;
-    const { budgetId, title, description, assignedToId, dueDate, notes } = req.body;
+    const { budgetId, title, description, assignedToId, assignedUserName, dueDate, notes } = req.body;
 
     const budget = await Budget.findOne({ _id: budgetId, company }).populate('client', 'name');
     if (!budget) return sendError(res, 'Orçamento não encontrado', 404);
     if (budget.status !== 'aprovado') return sendError(res, 'Só é possível criar OS para orçamentos aprovados', 400);
 
-    // Valida funcionário (se informado)
+    // Valida funcionário (se informado e não for referência de usuário)
+    let empId = null;
+    let responsavelNome = assignedUserName || '';
     if (assignedToId) {
       const emp = await Employee.findOne({ _id: assignedToId, company, isActive: true });
       if (!emp) return sendError(res, 'Funcionário não encontrado', 404);
+      empId = assignedToId;
+      responsavelNome = emp.name;
     }
 
     const last   = await OrdemServico.findOne({ company }).sort({ number: -1 }).select('number');
@@ -87,12 +91,13 @@ const createOS = async (req, res) => {
       budget: budgetId,
       client: budget.client._id,
       number,
-      title:      title || `OS referente ao ORC-${String(budget.number).padStart(3, '0')}`,
+      title:            title || `OS referente ao ORC-${String(budget.number).padStart(3, '0')}`,
       description,
-      assignedTo: assignedToId || null,
-      dueDate:    dueDate || null,
+      assignedTo:       empId,
+      assignedUserName: responsavelNome,
+      dueDate:          dueDate || null,
       notes,
-      createdBy:  req.user.id,
+      createdBy:        req.user.id,
     });
 
     await os.populate([
@@ -116,19 +121,23 @@ const updateOS = async (req, res) => {
     const os = await OrdemServico.findOne({ _id: req.params.id, company: req.user.company });
     if (!os) return sendError(res, 'OS não encontrada', 404);
 
-    const { status, title, description, assignedToId, dueDate, notes } = req.body;
+    const { status, title, description, assignedToId, assignedUserName, dueDate, notes } = req.body;
 
     if (title       !== undefined) os.title       = title;
     if (description !== undefined) os.description = description;
     if (notes       !== undefined) os.notes       = notes;
     if (dueDate     !== undefined) os.dueDate     = dueDate || null;
 
-    if (assignedToId !== undefined) {
+    if (assignedToId !== undefined || assignedUserName !== undefined) {
       if (assignedToId) {
         const emp = await Employee.findOne({ _id: assignedToId, company: req.user.company, isActive: true });
         if (!emp) return sendError(res, 'Funcionário não encontrado', 404);
+        os.assignedTo       = assignedToId;
+        os.assignedUserName = emp.name;
+      } else {
+        os.assignedTo       = null;
+        os.assignedUserName = assignedUserName || '';
       }
-      os.assignedTo = assignedToId || null;
     }
 
     if (status) {

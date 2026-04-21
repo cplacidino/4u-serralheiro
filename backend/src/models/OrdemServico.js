@@ -15,7 +15,8 @@ const osSchema = new mongoose.Schema(
       default: 'pendente',
     },
 
-    assignedTo:  { type: mongoose.Schema.Types.ObjectId, ref: 'Employee' },
+    assignedTo:      { type: mongoose.Schema.Types.ObjectId, ref: 'Employee' },
+    assignedUserName: { type: String, default: '' }, // dono ou responsável sem cadastro de funcionário
     dueDate:     { type: Date },
     completedAt: { type: Date },
     notes:       { type: String },

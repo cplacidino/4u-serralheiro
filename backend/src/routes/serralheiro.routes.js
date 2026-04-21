@@ -13,6 +13,7 @@ const {
   getVales, createVale, signVale, deleteVale, getPayroll,
 } = require('../controllers/employee.controller');
 const { getOSList, getOS, createOS, updateOS, deleteOS, getOSStats } = require('../controllers/os.controller');
+const { getAgendamentos, createAgendamento, updateAgendamento, deleteAgendamento } = require('../controllers/agendamento.controller');
 
 const router = express.Router();
 
@@ -95,6 +96,12 @@ router.get('/os/:id', getOS);
 router.post('/os', createOS);
 router.put('/os/:id', updateOS);
 router.delete('/os/:id', restrict('owner'), deleteOS);
+
+// Agendamentos
+router.get('/agendamentos', getAgendamentos);
+router.post('/agendamentos', createAgendamento);
+router.put('/agendamentos/:id', updateAgendamento);
+router.delete('/agendamentos/:id', deleteAgendamento);
 
 // Usuários (somente owner pode gerenciar)
 router.get('/users', restrict('owner'), getUsers);

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import useAutoRefresh from '../../hooks/useAutoRefresh'
 import {
   Plus, Search, ClipboardList, X, Pencil, Trash2, Printer,
@@ -7,6 +8,7 @@ import {
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 import { useAuth } from '../../contexts/AuthContext'
+import SearchableSelect from '../../components/SearchableSelect'
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const STATUS = {
@@ -45,26 +47,35 @@ const StatusBadge = ({ status }) => {
 }
 
 // ─── Modal Criar/Editar OS ────────────────────────────────────────────────────
-const OSModal = ({ os, onClose, onSaved }) => {
+const OSModal = ({ os, onClose, onSaved, initialBudgetId = '' }) => {
   const isEdit = !!os
-  const [budgets, setBudgets]     = useState([])
-  const [employees, setEmployees] = useState([])
-  const [budgetId, setBudgetId]   = useState(os?.budget?._id ?? os?.budget ?? '')
-  const [title, setTitle]         = useState(os?.title ?? '')
+  const { user: currentUser } = useAuth()
+  const [budgets, setBudgets]         = useState([])
+  const [responsaveis, setResponsaveis] = useState([])
+  const [budgetId, setBudgetId]       = useState(os?.budget?._id ?? os?.budget ?? initialBudgetId)
+  const [title, setTitle]             = useState(os?.title ?? '')
   const [description, setDescription] = useState(os?.description ?? '')
   const [assignedToId, setAssignedToId] = useState(os?.assignedTo?._id ?? os?.assignedTo ?? '')
-  const [dueDate, setDueDate]     = useState(os?.dueDate ? os.dueDate.split('T')[0] : '')
-  const [notes, setNotes]         = useState(os?.notes ?? '')
-  const [saving, setSaving]       = useState(false)
-  const [error, setError]         = useState('')
+  const [dueDate, setDueDate]         = useState(os?.dueDate ? os.dueDate.split('T')[0] : '')
+  const [notes, setNotes]             = useState(os?.notes ?? '')
+  const [saving, setSaving]           = useState(false)
+  const [error, setError]             = useState('')
 
   useEffect(() => {
     Promise.all([
       api.get('/s/budgets?status=aprovado&limit=100'),
       api.get('/s/employees'),
-    ]).then(([bRes, eRes]) => {
+      api.get('/s/profile'),
+    ]).then(([bRes, eRes, profileRes]) => {
       setBudgets(bRes.data.data.budgets ?? [])
-      setEmployees((eRes.data.data.employees ?? []).filter(e => e.isActive))
+      const ativos = (eRes.data.data.employees ?? []).filter(e => e.isActive)
+      const perfil = profileRes.data.data
+      // Dono aparece no topo da lista como opção
+      const lista = [
+        { _id: `user-${perfil._id}`, name: perfil.name, cargo: 'Proprietário', isOwner: true },
+        ...ativos,
+      ]
+      setResponsaveis(lista)
     }).catch(() => {})
   }, [])
 
@@ -73,12 +84,18 @@ const OSModal = ({ os, onClose, onSaved }) => {
     if (!isEdit && !budgetId) return setError('Selecione um orçamento aprovado.')
     if (!title.trim()) return setError('Informe o título da OS.')
     setSaving(true)
+    // Detecta se o responsável é o dono (ID virtual) ou um funcionário
+    const isOwnerSelected = assignedToId?.startsWith('user-')
+    const empId      = isOwnerSelected ? null : (assignedToId || null)
+    const ownerName  = isOwnerSelected
+      ? (responsaveis.find(r => r._id === assignedToId)?.name ?? '')
+      : ''
     try {
       if (isEdit) {
-        await api.put(`/s/os/${os._id}`, { title, description, assignedToId: assignedToId || null, dueDate: dueDate || null, notes })
+        await api.put(`/s/os/${os._id}`, { title, description, assignedToId: empId, assignedUserName: ownerName, dueDate: dueDate || null, notes })
         toast.success('OS atualizada!')
       } else {
-        await api.post('/s/os', { budgetId, title, description, assignedToId: assignedToId || null, dueDate: dueDate || null, notes })
+        await api.post('/s/os', { budgetId, title, description, assignedToId: empId, assignedUserName: ownerName, dueDate: dueDate || null, notes })
         toast.success('Ordem de Serviço criada!')
       }
       onSaved()
@@ -104,14 +121,17 @@ const OSModal = ({ os, onClose, onSaved }) => {
         <div className="p-5 space-y-4">
           {!isEdit && (
             <Field label="Orçamento Aprovado *">
-              <select value={budgetId} onChange={e => setBudgetId(e.target.value)} style={inp(!budgetId && error)}>
-                <option value="">Selecione o orçamento...</option>
-                {budgets.map(b => (
-                  <option key={b._id} value={b._id}>
-                    ORC-{String(b.number).padStart(3, '0')} — {b.client?.name} ({fmt(b.total)})
-                  </option>
-                ))}
-              </select>
+              <SearchableSelect
+                value={budgetId}
+                onChange={setBudgetId}
+                error={!budgetId && !!error}
+                placeholder="Selecione o orçamento aprovado..."
+                options={budgets.map(b => ({
+                  value: b._id,
+                  label: `ORC-${String(b.number).padStart(3,'0')} — ${b.client?.name}`,
+                  sub: fmt(b.total),
+                }))}
+              />
             </Field>
           )}
 
@@ -122,12 +142,17 @@ const OSModal = ({ os, onClose, onSaved }) => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Responsável (opcional)">
-              <select value={assignedToId} onChange={e => setAssignedToId(e.target.value)} style={inp()}>
-                <option value="">Sem responsável</option>
-                {employees.map(e => (
-                  <option key={e._id} value={e._id}>{e.name} — {e.cargo}</option>
-                ))}
-              </select>
+              <SearchableSelect
+                value={assignedToId}
+                onChange={setAssignedToId}
+                placeholder="Sem responsável"
+                clearable
+                options={responsaveis.map(e => ({
+                  value: e._id,
+                  label: e.name,
+                  sub: e.cargo,
+                }))}
+              />
             </Field>
             <Field label="Prazo (opcional)">
               <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={inp()} />
@@ -411,10 +436,13 @@ const OSPanel = ({ osId, onClose, onUpdated, isOwner }) => {
                 <div>
                   <p className="text-xs" style={{ color: 'var(--c-tx3)' }}>Responsável</p>
                   <p className="text-sm font-medium mt-0.5" style={{ color: 'var(--c-tx0)' }}>
-                    {os.assignedTo ? os.assignedTo.name : <span style={{ color: 'var(--c-tx3)' }}>Não definido</span>}
+                    {os.assignedTo?.name ?? os.assignedUserName || <span style={{ color: 'var(--c-tx3)' }}>Não definido</span>}
                   </p>
                   {os.assignedTo?.cargo && (
                     <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx2)' }}>{os.assignedTo.cargo}</p>
+                  )}
+                  {!os.assignedTo && os.assignedUserName && (
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx2)' }}>Proprietário</p>
                   )}
                 </div>
                 <div>
@@ -469,6 +497,7 @@ const OSPanel = ({ osId, onClose, onUpdated, isOwner }) => {
 const OrdensServicoPage = () => {
   const { user } = useAuth()
   const isOwner = user?.role === 'owner'
+  const [searchParams] = useSearchParams()
 
   const [osList, setOsList]         = useState([])
   const [loading, setLoading]       = useState(true)
@@ -479,6 +508,12 @@ const OrdensServicoPage = () => {
   const [stats, setStats]           = useState(null)
   const [showCreate, setShowCreate] = useState(false)
   const [selectedId, setSelectedId] = useState(null)
+  const [createBudgetId, setCreateBudgetId] = useState(() => searchParams.get('budgetId') ?? '')
+
+  // Auto-abre modal de criação com orçamento pré-selecionado quando vindo de Orçamentos
+  useEffect(() => {
+    if (createBudgetId) setShowCreate(true)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchList = useCallback(async () => {
     setLoading(true)
@@ -598,9 +633,9 @@ const OrdensServicoPage = () => {
                     <span className="text-xs" style={{ color: 'var(--c-tx3)' }}>
                       ORC-{String(os.budget?.number ?? 0).padStart(3, '0')}
                     </span>
-                    {os.assignedTo && (
+                    {(os.assignedTo || os.assignedUserName) && (
                       <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--c-tx3)' }}>
-                        <User size={10} /> {os.assignedTo.name}
+                        <User size={10} /> {os.assignedTo?.name ?? os.assignedUserName}
                       </span>
                     )}
                   </div>
@@ -637,7 +672,11 @@ const OrdensServicoPage = () => {
       )}
 
       {showCreate && (
-        <OSModal onClose={() => setShowCreate(false)} onSaved={fetchList} />
+        <OSModal
+          onClose={() => { setShowCreate(false); setCreateBudgetId('') }}
+          onSaved={fetchList}
+          initialBudgetId={createBudgetId}
+        />
       )}
 
       {selectedId && (
