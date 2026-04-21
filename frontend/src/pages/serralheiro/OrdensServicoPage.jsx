@@ -69,7 +69,7 @@ const OSModal = ({ os, onClose, onSaved, initialBudgetId = '' }) => {
     ]).then(([bRes, eRes, profileRes]) => {
       setBudgets(bRes.data.data.budgets ?? [])
       const ativos = (eRes.data.data.employees ?? []).filter(e => e.isActive)
-      const perfil = profileRes.data.data
+      const perfil = profileRes.data.data.user ?? profileRes.data.data
       // Dono aparece no topo da lista como opção
       const lista = [
         { _id: `user-${perfil._id}`, name: perfil.name, cargo: 'Proprietário', isOwner: true },
