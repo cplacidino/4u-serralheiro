@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Transaction = require('../models/Transaction');
 const Budget = require('../models/Budget');
 const SalePayment = require('../models/SalePayment');
@@ -26,7 +27,7 @@ const CATEGORIES = {
 // ─────────────────────────────────────────────
 const getSummary = async (req, res) => {
   try {
-    const company = req.user.company;
+    const company = new mongoose.Types.ObjectId(req.user.company);
     const { month, dateFrom, dateTo } = req.query;
 
     const now = new Date();
@@ -175,7 +176,7 @@ const getTransactions = async (req, res) => {
 // ─────────────────────────────────────────────
 const createTransaction = async (req, res) => {
   try {
-    const { type, category, description, amount, date, budgetId, dueDate, isPaid, supplier, recorrente, diaVencimento } = req.body;
+    const { type, category, description, amount, date, budgetId, dueDate, isPaid, supplier, recorrente, diaVencimento, paymentMethod } = req.body;
     const company = req.user.company;
 
     // Valida tipo e categoria
@@ -218,6 +219,7 @@ const createTransaction = async (req, res) => {
       paidAt: isScheduled ? null : new Date(),
       createdBy: req.user.id,
       supplier: supplier || null,
+      paymentMethod: paymentMethod || null,
       recorrente: recorrente === true || recorrente === 'true',
       diaVencimento: diaVencimento ? Number(diaVencimento) : null,
       recorrenciaId: null,

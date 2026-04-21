@@ -17,7 +17,7 @@ const budgetSchema = new mongoose.Schema(
     number: { type: Number, required: true },
     status: {
       type: String,
-      enum: ['rascunho', 'enviado', 'aprovado', 'rejeitado', 'cancelado'],
+      enum: ['rascunho', 'enviado', 'aprovado', 'em_os', 'finalizado', 'rejeitado', 'cancelado'],
       default: 'rascunho',
     },
     items: [budgetItemSchema],

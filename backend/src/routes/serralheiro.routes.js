@@ -6,7 +6,7 @@ const { getProducts, getProduct, createProduct, updateProduct, deleteProduct, ge
 const { getBudgets, getBudget, createBudget, updateBudget, deleteBudget, duplicateBudget } = require('../controllers/budget.controller');
 const { getUsers, createUser, updateUser, kickUser, getProfile, updateProfile, changePassword } = require('../controllers/user.controller');
 const { getSummary, getTransactions, createTransaction, updateTransaction, deleteTransaction, getDueExpenses, markExpensePaid, generateRecurring } = require('../controllers/finance.controller');
-const { getPaymentsByBudget, addPayment, receiveFiado, deletePayment, getFiados, getNotificationCount } = require('../controllers/payment.controller');
+const { getPaymentsByBudget, addPayment, receiveFiado, deletePayment, getFiados, getCheques, compensarCheque, devolverCheque, getNotificationCount } = require('../controllers/payment.controller');
 const { getMyCompany, updateMyCompany } = require('../controllers/company.controller');
 const {
   getEmployees, createEmployee, updateEmployee, deleteEmployee,
@@ -70,9 +70,12 @@ router.post('/finance/:id/pay', markExpensePaid);
 
 // Pagamentos de orçamento
 router.get('/payments/fiados', getFiados);
+router.get('/payments/cheques', getCheques);
 router.get('/payments/budget/:budgetId', getPaymentsByBudget);
 router.post('/payments', addPayment);
 router.post('/payments/:id/receive', receiveFiado);
+router.post('/payments/:id/compensar-cheque', compensarCheque);
+router.post('/payments/:id/devolver-cheque', devolverCheque);
 router.delete('/payments/:id', deletePayment);
 
 // Notificações

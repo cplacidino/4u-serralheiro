@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { HandCoins, RefreshCw, ChevronDown, ChevronUp, X, AlertTriangle, Clock, CheckCircle } from 'lucide-react'
+import { HandCoins, RefreshCw, ChevronDown, ChevronUp, X, AlertTriangle, Clock, CheckCircle, CreditCard, Ban } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 
@@ -193,12 +193,256 @@ const ClientCard = ({ group, onReceive }) => {
   )
 }
 
+// ─── Aba de Cheques ────────────────────────────────────────────────────────────
+const STATUS_CHEQUE = {
+  cheque_pendente:    { label: 'Pendente',    color: '#eab308', bg: 'rgba(234,179,8,0.15)' },
+  cheque_compensado:  { label: 'Compensado',  color: '#22c55e', bg: 'rgba(34,197,94,0.15)' },
+  cheque_devolvido:   { label: 'Devolvido',   color: '#ef4444', bg: 'rgba(239,68,68,0.15)' },
+}
+
+// tab: 'depositar' | 'fornecedor' | 'compensado' | 'devolvido'
+const TAB_QUERY = {
+  depositar:  { status: 'cheque_pendente',   destino: 'depositar' },
+  fornecedor: { status: 'cheque_pendente',   destino: 'fornecedor' },
+  compensado: { status: 'cheque_compensado', destino: '' },
+  devolvido:  { status: 'cheque_devolvido',  destino: '' },
+}
+
+const ChequesTab = () => {
+  const [tab, setTab] = useState('depositar')
+  const [cheques, setCheques] = useState([])
+  const [resumo, setResumo] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [actionId, setActionId] = useState(null)
+  const [motivo, setMotivo] = useState('')
+  const [showDevolverModal, setShowDevolverModal] = useState(null)
+
+  const fetchCheques = useCallback(async () => {
+    setLoading(true)
+    try {
+      const { status, destino } = TAB_QUERY[tab]
+      const qs = destino ? `status=${status}&destino=${destino}` : `status=${status}`
+      const res = await api.get(`/s/payments/cheques?${qs}`)
+      setCheques(res.data.data.cheques ?? [])
+      setResumo(res.data.data.resumo ?? null)
+    } catch { toast.error('Erro ao carregar cheques') }
+    finally { setLoading(false) }
+  }, [tab])
+
+  useEffect(() => { fetchCheques() }, [fetchCheques])
+
+  const handleCompensar = async (id) => {
+    if (!window.confirm('Confirmar compensação do cheque? Isso lançará a receita no financeiro.')) return
+    setActionId(id)
+    try {
+      await api.post(`/s/payments/${id}/compensar-cheque`)
+      toast.success('Cheque compensado! Receita registrada.')
+      fetchCheques()
+    } catch (e) { toast.error(e.response?.data?.message || 'Erro ao compensar') }
+    finally { setActionId(null) }
+  }
+
+  const handleDevolver = async () => {
+    if (!showDevolverModal) return
+    setActionId(showDevolverModal._id)
+    try {
+      await api.post(`/s/payments/${showDevolverModal._id}/devolver-cheque`, { motivo })
+      toast.success('Cheque marcado como devolvido.')
+      setShowDevolverModal(null)
+      setMotivo('')
+      fetchCheques()
+    } catch (e) { toast.error(e.response?.data?.message || 'Erro ao devolver') }
+    finally { setActionId(null) }
+  }
+
+  const TABS = [
+    { key: 'depositar',  label: '🏦 A Depositar',       color: '#eab308' },
+    { key: 'fornecedor', label: '🤝 Para Fornecedores',  color: '#60a5fa' },
+    { key: 'compensado', label: '✅ Compensados',        color: '#22c55e' },
+    { key: 'devolvido',  label: '⛔ Devolvidos',         color: '#ef4444' },
+  ]
+
+  return (
+    <div>
+      {/* Cards de resumo */}
+      {resumo && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          <div className="rounded-2xl p-4" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+            <p className="text-xs font-semibold uppercase mb-1.5" style={{ color: 'var(--c-tx3)' }}>A Depositar</p>
+            <p className="text-xl font-bold" style={{ color: '#eab308' }}>{fmt(resumo.totalPendenteDepositar)}</p>
+          </div>
+          <div className="rounded-2xl p-4" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+            <p className="text-xs font-semibold uppercase mb-1.5" style={{ color: 'var(--c-tx3)' }}>Para Fornecedores</p>
+            <p className="text-xl font-bold" style={{ color: '#60a5fa' }}>{fmt(resumo.totalPendenteFornecedor)}</p>
+          </div>
+          <div className="rounded-2xl p-4" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+            <p className="text-xs font-semibold uppercase mb-1.5" style={{ color: 'var(--c-tx3)' }}>Compensados</p>
+            <p className="text-xl font-bold" style={{ color: '#22c55e' }}>{fmt(resumo.totalCompensado)}</p>
+          </div>
+          <div className="rounded-2xl p-4" style={{ background: resumo.countAtrasado > 0 ? 'rgba(239,68,68,0.08)' : 'var(--c-bg1)', border: `1px solid ${resumo.countAtrasado > 0 ? 'rgba(239,68,68,0.3)' : 'var(--c-bd0)'}` }}>
+            <p className="text-xs font-semibold uppercase mb-1.5" style={{ color: resumo.countAtrasado > 0 ? '#ef4444' : 'var(--c-tx3)' }}>Atrasados</p>
+            <p className="text-xl font-bold" style={{ color: resumo.countAtrasado > 0 ? '#ef4444' : 'var(--c-tx2)' }}>
+              {resumo.countAtrasado} <span className="text-sm font-normal">cheque{resumo.countAtrasado !== 1 ? 's' : ''}</span>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Sub-abas de destino/status */}
+      <div className="flex gap-1 mb-5 flex-wrap">
+        {TABS.map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)}
+            className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
+            style={{
+              background: tab === t.key ? `${t.color}22` : 'var(--c-bg1)',
+              color: tab === t.key ? t.color : 'var(--c-tx2)',
+              border: `1px solid ${tab === t.key ? t.color : 'var(--c-bd0)'}`,
+            }}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Lista de cheques */}
+      {loading ? (
+        <div className="flex items-center justify-center h-40">
+          <div className="w-10 h-10 border-4 rounded-full animate-spin"
+            style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#a855f7' }} />
+        </div>
+      ) : cheques.length === 0 ? (
+        <div className="rounded-2xl text-center py-16" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+          <CreditCard size={40} className="mx-auto mb-3" style={{ color: 'var(--c-bd0)' }} />
+          <p className="text-base" style={{ color: 'var(--c-tx2)' }}>Nenhum cheque neste filtro</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {cheques.map(c => {
+            const st = STATUS_CHEQUE[c.status] ?? STATUS_CHEQUE.cheque_pendente
+            const overdue = isOverdue(c.dueDate) && c.status === 'cheque_pendente'
+            const dueToday = isDueToday(c.dueDate) && c.status === 'cheque_pendente'
+            const isFornecedor = c.chequeDestino === 'fornecedor'
+            return (
+              <div key={c._id} className="rounded-2xl p-5"
+                style={{ background: 'var(--c-bg1)', border: `1px solid ${overdue ? 'rgba(239,68,68,0.3)' : 'var(--c-bd0)'}` }}>
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div className="flex-1 min-w-0">
+                    {/* Cabeçalho do cheque */}
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <span className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>
+                        Cheque Nº {c.chequeNumero || 'S/N'}
+                      </span>
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                        style={{ background: st.bg, color: st.color }}>{st.label}</span>
+                      {isFornecedor ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                          style={{ background: 'rgba(96,165,250,0.15)', color: '#60a5fa' }}>🤝 Fornecedor</span>
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                          style={{ background: 'rgba(234,179,8,0.15)', color: '#eab308' }}>🏦 A Depositar</span>
+                      )}
+                      {overdue && <span className="text-xs font-semibold" style={{ color: '#ef4444' }}>⚠ Atrasado</span>}
+                      {dueToday && !overdue && <span className="text-xs font-semibold" style={{ color: '#eab308' }}>⏰ Vence hoje</span>}
+                    </div>
+
+                    {/* Dados do cheque */}
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs" style={{ color: 'var(--c-tx3)' }}>
+                      <span><strong style={{ color: 'var(--c-tx2)' }}>Cliente:</strong> {c.client?.name ?? '—'}</span>
+                      <span><strong style={{ color: 'var(--c-tx2)' }}>Orçamento:</strong> ORC-{String(c.budget?.number ?? 0).padStart(3,'0')}</span>
+                      {c.chequeBanco && <span><strong style={{ color: 'var(--c-tx2)' }}>Banco:</strong> {c.chequeBanco}</span>}
+                      {c.chequeAgencia && <span><strong style={{ color: 'var(--c-tx2)' }}>Agência:</strong> {c.chequeAgencia}</span>}
+                      {c.chequeConta && <span><strong style={{ color: 'var(--c-tx2)' }}>Conta:</strong> {c.chequeConta}</span>}
+                      {c.chequeTitular && <span><strong style={{ color: 'var(--c-tx2)' }}>Titular:</strong> {c.chequeTitular}</span>}
+                      {isFornecedor && c.chequeFornecedor && (
+                        <span className="col-span-2">
+                          <strong style={{ color: '#60a5fa' }}>Fornecedor:</strong>{' '}
+                          <span style={{ color: '#60a5fa' }}>{c.chequeFornecedor}</span>
+                        </span>
+                      )}
+                      <span>
+                        <strong style={{ color: 'var(--c-tx2)' }}>
+                          {c.status === 'cheque_compensado' ? 'Compensado em:' : 'Vencimento:'}
+                        </strong>{' '}
+                        <span style={{ color: overdue ? '#ef4444' : dueToday ? '#eab308' : 'inherit' }}>
+                          {fmtDate(c.dueDate)}
+                        </span>
+                      </span>
+                      {c.note && <span className="col-span-2"><strong style={{ color: 'var(--c-tx2)' }}>Obs:</strong> {c.note}</span>}
+                    </div>
+                  </div>
+
+                  {/* Valor e ações */}
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-xl font-bold mb-3"
+                      style={{ color: overdue ? '#ef4444' : isFornecedor ? '#60a5fa' : '#a855f7' }}>
+                      {fmt(c.amount)}
+                    </p>
+                    {c.status === 'cheque_pendente' && (
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          onClick={() => handleCompensar(c._id)}
+                          disabled={actionId === c._id}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold"
+                          style={{ background: 'rgba(34,197,94,0.12)', color: '#22c55e' }}>
+                          <CheckCircle size={14} /> Compensar
+                        </button>
+                        <button
+                          onClick={() => setShowDevolverModal(c)}
+                          disabled={actionId === c._id}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold"
+                          style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>
+                          <Ban size={14} /> Devolver
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Modal devolver cheque */}
+      {showDevolverModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
+          <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>Cheque Devolvido</h3>
+              <button onClick={() => setShowDevolverModal(null)} className="p-1 rounded-lg" style={{ color: 'var(--c-tx3)' }}><X size={18} /></button>
+            </div>
+            <p className="text-sm mb-3" style={{ color: 'var(--c-tx2)' }}>
+              Cheque Nº {showDevolverModal.chequeNumero || 'S/N'} de {showDevolverModal.client?.name} — {fmt(showDevolverModal.amount)}
+            </p>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Motivo (opcional)</label>
+              <input value={motivo} onChange={e => setMotivo(e.target.value)}
+                placeholder="Ex: sem fundos, conta encerrada..."
+                className="w-full rounded-xl px-3 py-2 text-sm"
+                style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)', color: 'var(--c-tx0)', outline: 'none' }} />
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setShowDevolverModal(null)} className="flex-1 py-2.5 rounded-xl text-sm"
+                style={{ background: 'var(--c-bg2)', color: 'var(--c-tx1)' }}>Cancelar</button>
+              <button onClick={handleDevolver} disabled={!!actionId}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                style={{ background: '#ef4444', color: 'white', opacity: actionId ? 0.7 : 1 }}>
+                Confirmar Devolução
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Página principal ──────────────────────────────────────────────────────────
 const FiadosPage = () => {
+  const [aba, setAba] = useState('fiados') // 'fiados' | 'cheques'
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [receivePayment, setReceivePayment] = useState(null)
-  const [filter, setFilter] = useState('todos') // 'todos' | 'vencidos' | 'hoje'
+  const [filter, setFilter] = useState('todos')
 
   const fetchFiados = useCallback(async () => {
     setLoading(true)
@@ -212,15 +456,13 @@ const FiadosPage = () => {
     }
   }, [])
 
-  useEffect(() => { fetchFiados() }, [fetchFiados])
+  useEffect(() => { if (aba === 'fiados') fetchFiados() }, [fetchFiados, aba])
 
   const byClient = data?.byClient ?? []
   const totalPendente = data?.totalPendente ?? 0
-
   const overdueCount = data?.fiados?.filter(f => isOverdue(f.dueDate)).length ?? 0
   const todayCount = data?.fiados?.filter(f => isDueToday(f.dueDate)).length ?? 0
 
-  // Filtra clientes conforme filtro selecionado
   const filteredGroups = byClient.filter(g => {
     if (filter === 'vencidos') return g.items.some(f => isOverdue(f.dueDate))
     if (filter === 'hoje') return g.items.some(f => isDueToday(f.dueDate))
@@ -230,89 +472,110 @@ const FiadosPage = () => {
   return (
     <div>
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
+      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-bold" style={{ color: 'var(--c-tx0)' }}>Fiado</h1>
-          <p className="text-base mt-1" style={{ color: 'var(--c-tx2)' }}>Valores pendentes de recebimento por cliente</p>
+          <p className="text-base mt-1" style={{ color: 'var(--c-tx2)' }}>Valores pendentes e cheques</p>
         </div>
-        <button onClick={fetchFiados}
-          className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-medium"
-          style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: 'var(--c-tx2)' }}>
-          <RefreshCw size={15} /> Atualizar
-        </button>
+        {aba === 'fiados' && (
+          <button onClick={fetchFiados}
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-medium"
+            style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)', color: 'var(--c-tx2)' }}>
+            <RefreshCw size={15} /> Atualizar
+          </button>
+        )}
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="rounded-2xl p-5" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
-          <p className="text-xs font-semibold uppercase mb-2" style={{ color: 'var(--c-tx3)' }}>Total em Aberto</p>
-          <p className="text-2xl font-bold" style={{ color: '#f97316' }}>{fmt(totalPendente)}</p>
-          <p className="text-xs mt-1" style={{ color: 'var(--c-tx3)' }}>{byClient.length} cliente{byClient.length !== 1 ? 's' : ''}</p>
-        </div>
-        <div className="rounded-2xl p-5" style={{ background: overdueCount > 0 ? 'rgba(239,68,68,0.08)' : 'var(--c-bg1)', border: `1px solid ${overdueCount > 0 ? 'rgba(239,68,68,0.3)' : 'var(--c-bd0)'}` }}>
-          <p className="text-xs font-semibold uppercase mb-2" style={{ color: overdueCount > 0 ? '#ef4444' : 'var(--c-tx3)' }}>Vencidos</p>
-          <p className="text-2xl font-bold" style={{ color: overdueCount > 0 ? '#ef4444' : 'var(--c-tx2)' }}>{overdueCount}</p>
-          <p className="text-xs mt-1" style={{ color: 'var(--c-tx3)' }}>fiados em atraso</p>
-        </div>
-        <div className="rounded-2xl p-5" style={{ background: todayCount > 0 ? 'rgba(234,179,8,0.08)' : 'var(--c-bg1)', border: `1px solid ${todayCount > 0 ? 'rgba(234,179,8,0.3)' : 'var(--c-bd0)'}` }}>
-          <p className="text-xs font-semibold uppercase mb-2" style={{ color: todayCount > 0 ? '#eab308' : 'var(--c-tx3)' }}>Vencem Hoje</p>
-          <p className="text-2xl font-bold" style={{ color: todayCount > 0 ? '#eab308' : 'var(--c-tx2)' }}>{todayCount}</p>
-          <p className="text-xs mt-1" style={{ color: 'var(--c-tx3)' }}>fiados com vencimento hoje</p>
-        </div>
-      </div>
-
-      {/* Filtros rápidos */}
-      <div className="flex items-center gap-2 mb-5">
+      {/* Abas */}
+      <div className="flex gap-2 mb-6" style={{ borderBottom: '1px solid var(--c-bd0)', paddingBottom: 0 }}>
         {[
-          { key: 'todos', label: 'Todos' },
-          { key: 'vencidos', label: `Vencidos (${overdueCount})` },
-          { key: 'hoje', label: `Vencem hoje (${todayCount})` },
-        ].map(f => (
-          <button key={f.key} onClick={() => setFilter(f.key)}
-            className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
+          { key: 'fiados', label: 'Fiados', icon: HandCoins },
+          { key: 'cheques', label: 'Cheques', icon: CreditCard },
+        ].map(({ key, label, icon: Icon }) => (
+          <button key={key} onClick={() => setAba(key)}
+            className="flex items-center gap-2 px-5 py-3 text-sm font-semibold transition-all rounded-t-xl"
             style={{
-              background: filter === f.key ? '#f97316' : 'var(--c-bg1)',
-              color: filter === f.key ? 'white' : 'var(--c-tx2)',
-              border: `1px solid ${filter === f.key ? '#f97316' : 'var(--c-bd0)'}`,
+              background: aba === key ? 'var(--c-bg1)' : 'transparent',
+              color: aba === key ? (key === 'cheques' ? '#a855f7' : '#f97316') : 'var(--c-tx3)',
+              borderBottom: aba === key ? `2px solid ${key === 'cheques' ? '#a855f7' : '#f97316'}` : '2px solid transparent',
             }}>
-            {f.label}
+            <Icon size={16} /> {label}
           </button>
         ))}
       </div>
 
-      {/* Lista */}
-      {loading ? (
-        <div className="flex items-center justify-center h-56">
-          <div className="w-10 h-10 border-4 rounded-full animate-spin"
-            style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
+      {/* Conteúdo da aba Fiados */}
+      {aba === 'fiados' && (<>
+        {/* KPIs */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="rounded-2xl p-5" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+            <p className="text-xs font-semibold uppercase mb-2" style={{ color: 'var(--c-tx3)' }}>Total em Aberto</p>
+            <p className="text-2xl font-bold" style={{ color: '#f97316' }}>{fmt(totalPendente)}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--c-tx3)' }}>{byClient.length} cliente{byClient.length !== 1 ? 's' : ''}</p>
+          </div>
+          <div className="rounded-2xl p-5" style={{ background: overdueCount > 0 ? 'rgba(239,68,68,0.08)' : 'var(--c-bg1)', border: `1px solid ${overdueCount > 0 ? 'rgba(239,68,68,0.3)' : 'var(--c-bd0)'}` }}>
+            <p className="text-xs font-semibold uppercase mb-2" style={{ color: overdueCount > 0 ? '#ef4444' : 'var(--c-tx3)' }}>Vencidos</p>
+            <p className="text-2xl font-bold" style={{ color: overdueCount > 0 ? '#ef4444' : 'var(--c-tx2)' }}>{overdueCount}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--c-tx3)' }}>fiados em atraso</p>
+          </div>
+          <div className="rounded-2xl p-5" style={{ background: todayCount > 0 ? 'rgba(234,179,8,0.08)' : 'var(--c-bg1)', border: `1px solid ${todayCount > 0 ? 'rgba(234,179,8,0.3)' : 'var(--c-bd0)'}` }}>
+            <p className="text-xs font-semibold uppercase mb-2" style={{ color: todayCount > 0 ? '#eab308' : 'var(--c-tx3)' }}>Vencem Hoje</p>
+            <p className="text-2xl font-bold" style={{ color: todayCount > 0 ? '#eab308' : 'var(--c-tx2)' }}>{todayCount}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--c-tx3)' }}>fiados com vencimento hoje</p>
+          </div>
         </div>
-      ) : filteredGroups.length === 0 ? (
-        <div className="rounded-2xl text-center py-20" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
-          <HandCoins size={48} className="mx-auto mb-4" style={{ color: 'var(--c-bd0)' }} />
-          <p className="text-lg font-medium" style={{ color: 'var(--c-tx2)' }}>
-            {filter === 'todos' ? 'Nenhum fiado pendente' : 'Nenhum fiado neste filtro'}
-          </p>
-          <p className="text-base mt-1" style={{ color: 'var(--c-tx3)' }}>
-            {filter === 'todos'
-              ? 'Quando um orçamento for pago com "Fiado", aparecerá aqui.'
-              : 'Tente trocar o filtro acima.'}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredGroups.map(g => (
-            <ClientCard key={g.client._id} group={g} onReceive={setReceivePayment} />
+
+        {/* Filtros */}
+        <div className="flex items-center gap-2 mb-5 flex-wrap">
+          {[
+            { key: 'todos', label: 'Todos' },
+            { key: 'vencidos', label: `Vencidos (${overdueCount})` },
+            { key: 'hoje', label: `Vencem hoje (${todayCount})` },
+          ].map(f => (
+            <button key={f.key} onClick={() => setFilter(f.key)}
+              className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
+              style={{
+                background: filter === f.key ? '#f97316' : 'var(--c-bg1)',
+                color: filter === f.key ? 'white' : 'var(--c-tx2)',
+                border: `1px solid ${filter === f.key ? '#f97316' : 'var(--c-bd0)'}`,
+              }}>
+              {f.label}
+            </button>
           ))}
         </div>
-      )}
 
-      {receivePayment && (
-        <ReceiveModal
-          payment={receivePayment}
-          onClose={() => setReceivePayment(null)}
-          onReceived={fetchFiados}
-        />
-      )}
+        {/* Lista */}
+        {loading ? (
+          <div className="flex items-center justify-center h-56">
+            <div className="w-10 h-10 border-4 rounded-full animate-spin"
+              style={{ borderColor: 'var(--c-bd1)', borderTopColor: '#f97316' }} />
+          </div>
+        ) : filteredGroups.length === 0 ? (
+          <div className="rounded-2xl text-center py-20" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+            <HandCoins size={48} className="mx-auto mb-4" style={{ color: 'var(--c-bd0)' }} />
+            <p className="text-lg font-medium" style={{ color: 'var(--c-tx2)' }}>
+              {filter === 'todos' ? 'Nenhum fiado pendente' : 'Nenhum fiado neste filtro'}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredGroups.map(g => (
+              <ClientCard key={g.client._id} group={g} onReceive={setReceivePayment} />
+            ))}
+          </div>
+        )}
+
+        {receivePayment && (
+          <ReceiveModal
+            payment={receivePayment}
+            onClose={() => setReceivePayment(null)}
+            onReceived={fetchFiados}
+          />
+        )}
+      </>)}
+
+      {/* Conteúdo da aba Cheques */}
+      {aba === 'cheques' && <ChequesTab />}
     </div>
   )
 }

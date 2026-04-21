@@ -42,27 +42,41 @@ const getPaymentsByBudget = async (req, res) => {
 const addPayment = async (req, res) => {
   try {
     const company = req.user.company;
-    const { budgetId, method, amount, note, dueDate } = req.body;
+    const {
+      budgetId, method, amount, note, dueDate,
+      chequeNumero, chequeBanco, chequeAgencia, chequeConta, chequeTitular,
+      chequeDestino, chequeFornecedor,
+    } = req.body;
 
     const budget = await Budget.findOne({ _id: budgetId, company }).populate('client');
     if (!budget) return sendError(res, 'Orçamento não encontrado', 404);
-    if (budget.status !== 'aprovado') return sendError(res, 'Orçamento precisa estar aprovado para registrar pagamento', 400);
+    if (!['aprovado', 'em_os', 'finalizado'].includes(budget.status))
+      return sendError(res, 'Orçamento precisa estar aprovado para registrar pagamento', 400);
 
-    const isFiado = method === 'fiado';
+    const isFiado  = method === 'fiado';
+    const isCheque = method === 'cheque';
+
     const payment = await SalePayment.create({
       company,
       budget: budgetId,
       client: budget.client._id,
       method,
       amount: Number(amount),
-      status: isFiado ? 'fiado_pendente' : 'pago',
+      status: isFiado ? 'fiado_pendente' : isCheque ? 'cheque_pendente' : 'pago',
       note,
-      dueDate: isFiado ? dueDate : null,
+      dueDate: (isFiado || isCheque) ? dueDate : null,
+      chequeNumero:    isCheque ? chequeNumero    : null,
+      chequeBanco:     isCheque ? chequeBanco     : null,
+      chequeAgencia:   isCheque ? chequeAgencia   : null,
+      chequeConta:     isCheque ? chequeConta     : null,
+      chequeTitular:   isCheque ? chequeTitular   : null,
+      chequeDestino:   isCheque ? (chequeDestino || 'depositar') : null,
+      chequeFornecedor:isCheque && chequeDestino === 'fornecedor' ? chequeFornecedor : null,
       createdBy: req.user.id,
     });
 
-    // Se não for fiado, registra como receita imediatamente
-    if (!isFiado) {
+    // Se não for fiado nem cheque pendente, registra como receita imediatamente
+    if (!isFiado && !isCheque) {
       const tx = await Transaction.create({
         company,
         type: 'receita',
@@ -73,6 +87,7 @@ const addPayment = async (req, res) => {
         budget: budgetId,
         isPaid: true,
         paidAt: new Date(),
+        paymentMethod: method,
         createdBy: req.user.id,
       });
       payment.incomeTransactionId = tx._id;
@@ -198,6 +213,111 @@ const getFiados = async (req, res) => {
   }
 };
 
+// GET /api/s/payments/cheques — Listar cheques com filtros: status, destino
+const getCheques = async (req, res) => {
+  try {
+    const company = req.user.company;
+    const { status, destino } = req.query;
+
+    const filter = { company, method: 'cheque' };
+    if (status) {
+      filter.status = status;
+    } else {
+      filter.status = { $in: ['cheque_pendente', 'cheque_compensado', 'cheque_devolvido'] };
+    }
+    if (destino) filter.chequeDestino = destino;
+
+    const cheques = await SalePayment.find(filter)
+      .populate('client', 'name phone')
+      .populate('budget', 'number total')
+      .populate('createdBy', 'name')
+      .sort({ dueDate: 1, createdAt: -1 });
+
+    // Resumo geral (sempre sem filtro de status/destino para mostrar totais corretos)
+    const todos = await SalePayment.find({ company, method: 'cheque' });
+    const resumo = {
+      totalPendenteDepositar: todos
+        .filter(c => c.status === 'cheque_pendente' && c.chequeDestino === 'depositar')
+        .reduce((s, c) => s + c.amount, 0),
+      totalPendenteFornecedor: todos
+        .filter(c => c.status === 'cheque_pendente' && c.chequeDestino === 'fornecedor')
+        .reduce((s, c) => s + c.amount, 0),
+      totalCompensado: todos
+        .filter(c => c.status === 'cheque_compensado')
+        .reduce((s, c) => s + c.amount, 0),
+      countDevolvido: todos.filter(c => c.status === 'cheque_devolvido').length,
+      countAtrasado: todos.filter(c =>
+        c.status === 'cheque_pendente' && c.dueDate && new Date(c.dueDate) < new Date()
+      ).length,
+    };
+
+    return sendSuccess(res, { cheques, resumo });
+  } catch (err) {
+    return sendError(res, 'Erro ao buscar cheques', 500);
+  }
+};
+
+// POST /api/s/payments/:id/compensar-cheque — Compensar cheque
+const compensarCheque = async (req, res) => {
+  try {
+    const payment = await SalePayment.findOne({
+      _id: req.params.id,
+      company: req.user.company,
+      status: 'cheque_pendente',
+    });
+    if (!payment) return sendError(res, 'Cheque não encontrado ou já processado', 404);
+
+    const budget = await Budget.findById(payment.budget);
+
+    payment.status = 'cheque_compensado';
+    payment.paidAt = new Date();
+
+    // Registra como receita ao compensar
+    const tx = await Transaction.create({
+      company: req.user.company,
+      type: 'receita',
+      category: 'Orçamento',
+      description: `Cheque compensado — ORC-${budget ? String(budget.number).padStart(3, '0') : ''} (Nº ${payment.chequeNumero || 'S/N'})`,
+      amount: payment.amount,
+      date: new Date(),
+      budget: payment.budget,
+      isPaid: true,
+      paidAt: new Date(),
+      paymentMethod: 'cheque',
+      createdBy: req.user.id,
+    });
+
+    payment.incomeTransactionId = tx._id;
+    await payment.save();
+    await recalcBudget(payment.budget);
+
+    return sendSuccess(res, { payment }, 'Cheque compensado com sucesso');
+  } catch (err) {
+    console.error('Erro ao compensar cheque:', err);
+    return sendError(res, 'Erro ao compensar cheque', 500);
+  }
+};
+
+// POST /api/s/payments/:id/devolver-cheque — Marcar cheque como devolvido
+const devolverCheque = async (req, res) => {
+  try {
+    const payment = await SalePayment.findOne({
+      _id: req.params.id,
+      company: req.user.company,
+      status: 'cheque_pendente',
+    });
+    if (!payment) return sendError(res, 'Cheque não encontrado ou já processado', 404);
+
+    payment.status = 'cheque_devolvido';
+    payment.note = req.body.motivo ? `Devolvido: ${req.body.motivo}` : payment.note;
+    await payment.save();
+
+    return sendSuccess(res, { payment }, 'Cheque marcado como devolvido');
+  } catch (err) {
+    return sendError(res, 'Erro ao devolver cheque', 500);
+  }
+};
+
 // GET /api/s/notifications/count — Para o sino de notificações
 const getNotificationCount = async (req, res) => {
   try {
@@ -207,21 +327,23 @@ const getNotificationCount = async (req, res) => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const [overdueExpenses, dueTodayExpenses, overduefiados] = await Promise.all([
+    const [overdueExpenses, dueTodayExpenses, overduefiados, overdueCheques] = await Promise.all([
       Transaction.countDocuments({ company, type: 'despesa', isPaid: false, dueDate: { $lt: today } }),
       Transaction.countDocuments({ company, type: 'despesa', isPaid: false, dueDate: { $gte: today, $lt: tomorrow } }),
       SalePayment.countDocuments({ company, status: 'fiado_pendente', dueDate: { $lt: today } }),
+      SalePayment.countDocuments({ company, status: 'cheque_pendente', dueDate: { $lt: today } }),
     ]);
 
     return sendSuccess(res, {
       overdueExpenses,
       dueTodayExpenses,
       overduefiados,
-      total: overdueExpenses + dueTodayExpenses + overduefiados,
+      overdueCheques,
+      total: overdueExpenses + dueTodayExpenses + overduefiados + overdueCheques,
     });
   } catch (err) {
     return sendError(res, 'Erro ao buscar notificações', 500);
   }
 };
 
-module.exports = { getPaymentsByBudget, addPayment, receiveFiado, deletePayment, getFiados, getNotificationCount };
+module.exports = { getPaymentsByBudget, addPayment, receiveFiado, deletePayment, getFiados, getCheques, compensarCheque, devolverCheque, getNotificationCount };

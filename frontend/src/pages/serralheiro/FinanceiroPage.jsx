@@ -73,12 +73,24 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
   const [agendarPagar, setAgendarPagar] = useState(tx ? !tx.isPaid : false)
   const [dueDate, setDueDate] = useState(tx?.dueDate ? toInputDate(tx.dueDate) : '')
   const [supplier, setSupplier] = useState(tx?.supplier ?? '')
+  const [paymentMethod, setPaymentMethod] = useState(tx?.paymentMethod ?? '')
   const [recorrente, setRecorrente] = useState(false)
   const [diaVencimento, setDiaVencimento] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const handleTypeChange = (t) => { setType(t); setCategory(''); setGroup(''); setAgendarPagar(false) }
+  const handleTypeChange = (t) => { setType(t); setCategory(''); setGroup(''); setAgendarPagar(false); setPaymentMethod('') }
+
+  const PAYMENT_OPTS = [
+    { value: '', label: 'Não informado' },
+    { value: 'dinheiro', label: 'Dinheiro' },
+    { value: 'pix', label: 'PIX' },
+    { value: 'cartão_débito', label: 'Cartão Débito' },
+    { value: 'cartão_crédito', label: 'Cartão Crédito' },
+    { value: 'transferência', label: 'Transferência' },
+    { value: 'cheque', label: 'Cheque' },
+    { value: 'outro', label: 'Outro' },
+  ]
 
   const groupOptions = Object.keys(categoryGroups ?? {})
   const catOptions = type === 'receita'
@@ -111,6 +123,7 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
         payload.date = date
       }
       if (supplier) payload.supplier = supplier
+      if (paymentMethod) payload.paymentMethod = paymentMethod
       if (isEdit) {
         await api.put(`/s/finance/${tx._id}`, payload)
         toast.success('Lançamento atualizado!')
@@ -190,10 +203,19 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
               placeholder="0,00" style={inputCls(!amount && error)} />
           </Field>
 
+          {/* Forma de pagamento (somente receita) */}
+          {type === 'receita' && (
+            <Field label="Forma de Pagamento">
+              <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} style={inputCls(false)}>
+                {PAYMENT_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </Field>
+          )}
+
           {/* Fornecedor / Funcionário */}
-          <Field label="Fornecedor / Funcionário">
+          <Field label={type === 'receita' ? 'Cliente / Observação' : 'Fornecedor / Funcionário'}>
             <input value={supplier} onChange={e => setSupplier(e.target.value)}
-              placeholder="Ex: João Silva, Posto Shell..." style={inputCls(false)} />
+              placeholder={type === 'receita' ? 'Ex: João Silva, serviço avulso...' : 'Ex: João Silva, Posto Shell...'} style={inputCls(false)} />
           </Field>
 
           {/* Toggle recorrente (somente despesa nova) */}

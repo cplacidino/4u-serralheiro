@@ -15,6 +15,8 @@ const transactionSchema = new mongoose.Schema(
     isPaid:  { type: Boolean, default: true },   // false = agendada/a vencer
     paidAt:  { type: Date, default: null },      // quando foi paga
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    // Forma de pagamento (opcional — usado em receitas manuais)
+    paymentMethod:  { type: String, enum: ['dinheiro','pix','cartão_débito','cartão_crédito','transferência','cheque','outro'], default: null },
     // Fornecedor ou funcionário relacionado (texto livre)
     supplier:       { type: String, default: null },
     // Recorrência mensal

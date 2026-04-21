@@ -1,14 +1,160 @@
 import { useEffect, useState } from 'react'
-import { Users, Package, FileText, TrendingUp, TrendingDown, AlertTriangle, Clock, RefreshCw, Wallet } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Users, Package, FileText, TrendingUp, TrendingDown, AlertTriangle, Clock, RefreshCw, Wallet, ClipboardList, CalendarCheck, HandCoins, CreditCard, CheckSquare } from 'lucide-react'
 import api from '../../services/api'
 import useAutoRefresh from '../../hooks/useAutoRefresh'
 
 const STATUS_COLORS = {
-  rascunho: { bg: 'rgba(100,116,139,0.15)', color: '#94a3b8', label: 'Rascunho' },
-  enviado:  { bg: 'rgba(59,130,246,0.15)',  color: '#60a5fa', label: 'Enviado' },
-  aprovado: { bg: 'rgba(34,197,94,0.15)',   color: '#22c55e', label: 'Aprovado' },
-  rejeitado:{ bg: 'rgba(239,68,68,0.15)',   color: '#ef4444', label: 'Rejeitado' },
-  cancelado:{ bg: 'rgba(239,68,68,0.15)',   color: '#ef4444', label: 'Cancelado' },
+  rascunho:  { bg: 'rgba(100,116,139,0.15)', color: '#94a3b8', label: 'Rascunho' },
+  enviado:   { bg: 'rgba(59,130,246,0.15)',  color: '#60a5fa', label: 'Enviado' },
+  aprovado:  { bg: 'rgba(34,197,94,0.15)',   color: '#22c55e', label: 'Aprovado' },
+  em_os:     { bg: 'rgba(249,115,22,0.15)',  color: '#f97316', label: 'Em OS' },
+  finalizado:{ bg: 'rgba(168,85,247,0.15)',  color: '#a855f7', label: 'Finalizado' },
+  rejeitado: { bg: 'rgba(239,68,68,0.15)',   color: '#ef4444', label: 'Rejeitado' },
+  cancelado: { bg: 'rgba(239,68,68,0.15)',   color: '#ef4444', label: 'Cancelado' },
+}
+
+const OS_STATUS = {
+  pendente:    { label: 'Pendente',    color: '#eab308' },
+  em_execucao: { label: 'Em execução', color: '#60a5fa' },
+  concluido:   { label: 'Concluído',   color: '#22c55e' },
+  cancelado:   { label: 'Cancelado',   color: '#ef4444' },
+}
+
+const AfazeresWidget = ({ afazeres, navigate }) => {
+  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('pt-BR') : '—'
+  const fmt = (v) => (v ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  const total = afazeres?.totalAfazeres ?? 0
+
+  const Section = ({ icon: Icon, color, title, items, renderItem }) => {
+    if (!items?.length) return null
+    return (
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <Icon size={15} style={{ color }} />
+          <span className="text-xs font-semibold uppercase tracking-wide" style={{ color }}>{title}</span>
+          <span className="text-xs px-2 py-0.5 rounded-full font-bold"
+            style={{ background: `${color}22`, color }}>{items.length}</span>
+        </div>
+        <div className="space-y-1.5 mb-3">
+          {items.map((item, i) => renderItem(item, i))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-2xl p-6 mb-6" style={{
+      background: total > 0 ? 'rgba(249,115,22,0.05)' : 'var(--c-bg1)',
+      border: `1px solid ${total > 0 ? 'rgba(249,115,22,0.3)' : 'var(--c-bd0)'}`,
+    }}>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <CheckSquare size={20} style={{ color: '#f97316' }} />
+          <h2 className="text-lg font-bold" style={{ color: 'var(--c-tx0)' }}>Afazeres de Hoje</h2>
+        </div>
+        {total > 0 && (
+          <span className="text-sm px-3 py-1 rounded-full font-bold"
+            style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316' }}>
+            {total} {total === 1 ? 'item' : 'itens'}
+          </span>
+        )}
+      </div>
+
+      {total === 0 ? (
+        <div className="text-center py-6">
+          <CheckSquare size={32} className="mx-auto mb-2" style={{ color: 'var(--c-bd0)' }} />
+          <p className="text-sm" style={{ color: 'var(--c-tx3)' }}>Nenhum afazer pendente hoje. Tudo em dia!</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <Section icon={ClipboardList} color="#f97316" title="OS para entregar / atrasadas"
+            items={afazeres?.osDueToday}
+            renderItem={(os, i) => (
+              <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer"
+                style={{ background: 'var(--c-bg2)' }}
+                onClick={() => navigate('/dashboard/ordens-servico')}>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--c-tx0)' }}>
+                    OS-{String(os.number).padStart(3,'0')} · {os.client?.name ?? '—'}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>{os.title}</p>
+                </div>
+                <div className="text-right flex-shrink-0 ml-2">
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={{ background: `${OS_STATUS[os.status]?.color ?? '#eab308'}22`, color: OS_STATUS[os.status]?.color ?? '#eab308' }}>
+                    {OS_STATUS[os.status]?.label ?? os.status}
+                  </span>
+                  <p className="text-xs mt-1" style={{ color: new Date(os.dueDate) < new Date() ? '#ef4444' : 'var(--c-tx3)' }}>
+                    {fmtDate(os.dueDate)}
+                  </p>
+                </div>
+              </div>
+            )}
+          />
+          <Section icon={CalendarCheck} color="#60a5fa" title="Agendamentos de hoje"
+            items={afazeres?.agendamentosHoje}
+            renderItem={(ag, i) => (
+              <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer"
+                style={{ background: 'var(--c-bg2)' }}
+                onClick={() => navigate('/dashboard/agendamentos')}>
+                <p className="text-sm font-medium" style={{ color: 'var(--c-tx0)' }}>{ag.title}</p>
+                <p className="text-xs flex-shrink-0 ml-2" style={{ color: 'var(--c-tx3)' }}>
+                  {new Date(ag.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
+            )}
+          />
+          <Section icon={HandCoins} color="#eab308" title="Fiados vencendo / vencidos"
+            items={afazeres?.fiadosVencendoHoje}
+            renderItem={(f, i) => (
+              <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer"
+                style={{ background: 'var(--c-bg2)' }}
+                onClick={() => navigate('/dashboard/fiado')}>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--c-tx0)' }}>{f.client?.name}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>
+                    ORC-{String(f.budget?.number ?? 0).padStart(3,'0')} · vence {fmtDate(f.dueDate)}
+                  </p>
+                </div>
+                <p className="text-sm font-bold flex-shrink-0 ml-2" style={{ color: '#eab308' }}>{fmt(f.amount)}</p>
+              </div>
+            )}
+          />
+          <Section icon={CreditCard} color="#ef4444" title="Despesas a pagar"
+            items={afazeres?.despesasVencendoHoje}
+            renderItem={(d, i) => (
+              <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer"
+                style={{ background: 'var(--c-bg2)' }}
+                onClick={() => navigate('/dashboard/financeiro')}>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--c-tx0)' }}>{d.description}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>{d.category} · vence {fmtDate(d.dueDate)}</p>
+                </div>
+                <p className="text-sm font-bold flex-shrink-0 ml-2" style={{ color: '#ef4444' }}>{fmt(d.amount)}</p>
+              </div>
+            )}
+          />
+          <Section icon={CreditCard} color="#a855f7" title="Cheques a compensar"
+            items={afazeres?.chequesVencendoHoje}
+            renderItem={(c, i) => (
+              <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer"
+                style={{ background: 'var(--c-bg2)' }}
+                onClick={() => navigate('/dashboard/fiado')}>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--c-tx0)' }}>{c.client?.name}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>
+                    Nº {c.chequeNumero || 'S/N'} · {c.chequeBanco || ''} · {fmtDate(c.dueDate)}
+                  </p>
+                </div>
+                <p className="text-sm font-bold flex-shrink-0 ml-2" style={{ color: '#a855f7' }}>{fmt(c.amount)}</p>
+              </div>
+            )}
+          />
+        </div>
+      )}
+    </div>
+  )
 }
 
 const StatCard = ({ title, value, icon: Icon, color, subtitle }) => (
@@ -26,6 +172,7 @@ const StatCard = ({ title, value, icon: Icon, color, subtitle }) => (
 )
 
 const DashboardSerralheiro = () => {
+  const navigate = useNavigate()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -132,6 +279,9 @@ const DashboardSerralheiro = () => {
           <p className="text-xs mt-1" style={{ color: 'var(--c-tx3)' }}>Receitas − Despesas</p>
         </div>
       </div>
+
+      {/* Afazeres do dia */}
+      <AfazeresWidget afazeres={data?.afazeres} navigate={navigate} />
 
       {/* Painéis inferiores */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

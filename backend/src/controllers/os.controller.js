@@ -71,7 +71,11 @@ const createOS = async (req, res) => {
 
     const budget = await Budget.findOne({ _id: budgetId, company }).populate('client', 'name');
     if (!budget) return sendError(res, 'Orçamento não encontrado', 404);
-    if (budget.status !== 'aprovado') return sendError(res, 'Só é possível criar OS para orçamentos aprovados', 400);
+    if (!['aprovado'].includes(budget.status)) return sendError(res, 'Só é possível criar OS para orçamentos aprovados', 400);
+
+    // Bloqueia criação de OS duplicada
+    const osExistente = await OrdemServico.findOne({ budget: budgetId, company, status: { $nin: ['cancelado'] } });
+    if (osExistente) return sendError(res, `Já existe uma OS (OS-${String(osExistente.number).padStart(3,'0')}) para este orçamento`, 400);
 
     // Valida funcionário (se informado e não for referência de usuário)
     let empId = null;
@@ -99,6 +103,9 @@ const createOS = async (req, res) => {
       notes,
       createdBy:        req.user.id,
     });
+
+    // Marca orçamento como "em OS"
+    await Budget.findByIdAndUpdate(budgetId, { status: 'em_os' });
 
     await os.populate([
       { path: 'client',     select: 'name phone' },
@@ -142,7 +149,11 @@ const updateOS = async (req, res) => {
 
     if (status) {
       os.status = status;
-      if (status === 'concluido' && !os.completedAt) os.completedAt = new Date();
+      if (status === 'concluido' && !os.completedAt) {
+        os.completedAt = new Date();
+        // Marca orçamento como finalizado
+        if (os.budget) await Budget.findByIdAndUpdate(os.budget, { status: 'finalizado' });
+      }
     }
 
     await os.save();

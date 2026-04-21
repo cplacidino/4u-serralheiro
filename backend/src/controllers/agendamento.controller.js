@@ -1,6 +1,7 @@
 const Agendamento = require('../models/Agendamento');
 const OrdemServico = require('../models/OrdemServico');
 const Budget = require('../models/Budget');
+const SalePayment = require('../models/SalePayment');
 const { sendSuccess, sendError } = require('../utils/response');
 
 // ─────────────────────────────────────────────
@@ -18,7 +19,7 @@ const getAgendamentos = async (req, res) => {
     end.setHours(23, 59, 59, 999);
 
     // Agendamentos manuais no período
-    const [manual, osWithDue, budgets] = await Promise.all([
+    const [manual, osWithDue, chequesNoPeriodo] = await Promise.all([
       Agendamento.find({
         company,
         date: { $gte: start, $lte: end },
@@ -28,26 +29,28 @@ const getAgendamentos = async (req, res) => {
         .populate('createdBy', 'name')
         .sort({ date: 1 }),
 
-      // OS com prazo no período (sincronização automática)
+      // OS com prazo no período — inclui concluídas, exclui apenas canceladas
       OrdemServico.find({
         company,
         dueDate: { $gte: start, $lte: end },
-        status: { $nin: ['concluido', 'cancelado'] },
+        status: { $ne: 'cancelado' },
       })
         .populate('client', 'name')
         .populate('budget', 'number')
-        .select('number title dueDate status client budget')
+        .select('number title dueDate status client budget completedAt')
         .sort({ dueDate: 1 }),
 
-      // Orçamentos pendentes/em_andamento com datas no período
-      Budget.find({
+      // Cheques pendentes com dueDate no período
+      SalePayment.find({
         company,
-        status: { $in: ['pendente', 'em_andamento', 'aprovado'] },
-        updatedAt: { $gte: start, $lte: end },
+        method: 'cheque',
+        status: 'cheque_pendente',
+        dueDate: { $gte: start, $lte: end },
       })
         .populate('client', 'name')
-        .select('number total status client updatedAt')
-        .sort({ updatedAt: 1 }),
+        .populate('budget', 'number')
+        .select('amount dueDate chequeNumero chequeBanco chequeDestino chequeFornecedor client budget')
+        .sort({ dueDate: 1 }),
     ]);
 
     // Converte OS em eventos virtuais
@@ -62,7 +65,26 @@ const getAgendamentos = async (req, res) => {
       client: os.client,
     }));
 
-    return sendSuccess(res, { agendamentos: manual, osEvents });
+    // Converte cheques em eventos virtuais
+    const chequeEvents = chequesNoPeriodo.map(ch => ({
+      _id: `cheque-${ch._id}`,
+      title: ch.chequeDestino === 'fornecedor'
+        ? `Cheque Nº ${ch.chequeNumero || 'S/N'} → ${ch.chequeFornecedor || 'Fornecedor'}`
+        : `Cheque Nº ${ch.chequeNumero || 'S/N'} · ${ch.client?.name || ''}`,
+      date: ch.dueDate,
+      type: 'cheque_vencimento',
+      status: 'pendente',
+      isVirtual: true,
+      chequeDestino: ch.chequeDestino,
+      chequeNumero: ch.chequeNumero,
+      chequeBanco: ch.chequeBanco,
+      amount: ch.amount,
+      client: ch.client,
+      budget: ch.budget,
+      paymentId: ch._id,
+    }));
+
+    return sendSuccess(res, { agendamentos: manual, osEvents, chequeEvents });
   } catch (error) {
     console.error('Erro ao buscar agendamentos:', error);
     return sendError(res, 'Erro ao buscar agendamentos', 500);

@@ -11,11 +11,13 @@ import api from '../../services/api'
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const STATUS = {
-  rascunho:  { label: 'Rascunho',  bg: 'rgba(100,116,139,0.15)', color: '#94a3b8' },
-  enviado:   { label: 'Enviado',   bg: 'rgba(59,130,246,0.15)',  color: '#60a5fa' },
-  aprovado:  { label: 'Aprovado',  bg: 'rgba(34,197,94,0.15)',   color: '#22c55e' },
-  rejeitado: { label: 'Rejeitado', bg: 'rgba(239,68,68,0.15)',   color: '#ef4444' },
-  cancelado: { label: 'Cancelado', bg: 'rgba(239,68,68,0.15)',   color: '#ef4444' },
+  rascunho:  { label: 'Rascunho',   bg: 'rgba(100,116,139,0.15)', color: '#94a3b8' },
+  enviado:   { label: 'Enviado',    bg: 'rgba(59,130,246,0.15)',  color: '#60a5fa' },
+  aprovado:  { label: 'Aprovado',   bg: 'rgba(34,197,94,0.15)',   color: '#22c55e' },
+  em_os:     { label: 'Em OS',      bg: 'rgba(249,115,22,0.15)',  color: '#f97316' },
+  finalizado:{ label: 'Finalizado', bg: 'rgba(168,85,247,0.15)',  color: '#a855f7' },
+  rejeitado: { label: 'Rejeitado',  bg: 'rgba(239,68,68,0.15)',   color: '#ef4444' },
+  cancelado: { label: 'Cancelado',  bg: 'rgba(239,68,68,0.15)',   color: '#ef4444' },
 }
 
 const UNITS = ['un', 'm', 'm²', 'm³', 'kg', 'h', 'vb']
@@ -140,19 +142,39 @@ const PaymentForm = ({ budget, onClose, onSaved }) => {
   const [amount, setAmount] = useState(remaining.toFixed(2))
   const [note, setNote] = useState('')
   const [dueDate, setDueDate] = useState('')
+  const [chequeNumero, setChequeNumero] = useState('')
+  const [chequeBanco, setChequeBanco] = useState('')
+  const [chequeAgencia, setChequeAgencia] = useState('')
+  const [chequeConta, setChequeConta] = useState('')
+  const [chequeTitular, setChequeTitular] = useState('')
+  const [chequeDestino, setChequeDestino] = useState('depositar')
+  const [chequeFornecedor, setChequeFornecedor] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  const isFiado  = method === 'fiado'
+  const isCheque = method === 'cheque'
 
   const handleSave = async () => {
     setError('')
     const val = Number(amount)
     if (!val || val <= 0) return setError('Informe um valor válido.')
-    if (method === 'fiado' && !dueDate) return setError('Informe a data de vencimento para fiado.')
+    if (isFiado && !dueDate) return setError('Informe a data de vencimento para fiado.')
+    if (isCheque && !chequeNumero) return setError('Informe o número do cheque.')
+    if (isCheque && !dueDate) return setError('Informe a data de compensação do cheque.')
     setSaving(true)
     try {
       await api.post('/s/payments', {
         budgetId: budget._id, method, amount: val,
-        note: note || undefined, dueDate: dueDate || undefined,
+        note: note || undefined,
+        dueDate: (isFiado || isCheque) ? dueDate : undefined,
+        chequeNumero:     isCheque ? chequeNumero     : undefined,
+        chequeBanco:      isCheque ? chequeBanco      : undefined,
+        chequeAgencia:    isCheque ? chequeAgencia    : undefined,
+        chequeConta:      isCheque ? chequeConta      : undefined,
+        chequeTitular:    isCheque ? chequeTitular    : undefined,
+        chequeDestino:    isCheque ? chequeDestino    : undefined,
+        chequeFornecedor: isCheque && chequeDestino === 'fornecedor' ? chequeFornecedor : undefined,
       })
       toast.success('Pagamento registrado!')
       onSaved()
@@ -177,13 +199,59 @@ const PaymentForm = ({ budget, onClose, onSaved }) => {
           <input type="number" step="0.01" value={amount}
             onChange={e => setAmount(e.target.value)} style={inputCls(false)} placeholder="0,00" />
         </div>
-        {method === 'fiado' && (
+        {(isFiado || isCheque) && (
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Vencimento</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>
+              {isCheque ? 'Data de Compensação' : 'Vencimento'}
+            </label>
             <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={inputCls(false)} />
           </div>
         )}
-        <div className={method === 'fiado' ? '' : 'col-span-2'}>
+        {isCheque && (<>
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Nº do Cheque *</label>
+            <input value={chequeNumero} onChange={e => setChequeNumero(e.target.value)} style={inputCls(false)} placeholder="000000" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Banco</label>
+            <input value={chequeBanco} onChange={e => setChequeBanco(e.target.value)} style={inputCls(false)} placeholder="Ex: Bradesco" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Agência</label>
+            <input value={chequeAgencia} onChange={e => setChequeAgencia(e.target.value)} style={inputCls(false)} placeholder="0000" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Conta</label>
+            <input value={chequeConta} onChange={e => setChequeConta(e.target.value)} style={inputCls(false)} placeholder="00000-0" />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Titular do Cheque</label>
+            <input value={chequeTitular} onChange={e => setChequeTitular(e.target.value)} style={inputCls(false)} placeholder="Nome do titular" />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Destino do Cheque</label>
+            <div className="flex gap-2">
+              {[{ v: 'depositar', l: '🏦 A Depositar' }, { v: 'fornecedor', l: '🤝 Para Fornecedor' }].map(opt => (
+                <button key={opt.v} type="button" onClick={() => setChequeDestino(opt.v)}
+                  className="flex-1 py-2 rounded-xl text-xs font-medium transition-all"
+                  style={{
+                    background: chequeDestino === opt.v ? 'rgba(249,115,22,0.2)' : 'var(--c-bg2)',
+                    border: `1px solid ${chequeDestino === opt.v ? '#f97316' : 'var(--c-bd1)'}`,
+                    color: chequeDestino === opt.v ? '#f97316' : 'var(--c-tx1)',
+                  }}>
+                  {opt.l}
+                </button>
+              ))}
+            </div>
+          </div>
+          {chequeDestino === 'fornecedor' && (
+            <div className="col-span-2">
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Nome do Fornecedor</label>
+              <input value={chequeFornecedor} onChange={e => setChequeFornecedor(e.target.value)} style={inputCls(false)} placeholder="Fornecedor que receberá o cheque" />
+            </div>
+          )}
+        </>)}
+        <div className={isFiado || isCheque ? 'col-span-2' : 'col-span-2'}>
           <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Observação</label>
           <input value={note} onChange={e => setNote(e.target.value)}
             placeholder="Opcional" style={inputCls(false)} />
@@ -210,7 +278,7 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
   const [showPayForm, setShowPayForm] = useState(false)
 
   const loadPayments = useCallback(async () => {
-    if (budget?.status !== 'aprovado') return
+    if (!['aprovado', 'em_os', 'finalizado'].includes(budget?.status)) return
     try {
       const res = await api.get(`/s/payments/budget/${budget._id}`)
       setPayments(res.data.data.payments ?? [])
@@ -421,13 +489,18 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
             )}
             {budget.status === 'aprovado' && (
               <button
-                onClick={() => {
-                  onClose()
-                  navigate(`/dashboard/ordens-servico?budgetId=${budget._id}`)
-                }}
+                onClick={() => { onClose(); navigate(`/dashboard/ordens-servico?budgetId=${budget._id}`) }}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium"
                 style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316' }}>
                 <ClipboardList size={16} /> Gerar OS
+              </button>
+            )}
+            {(budget.status === 'em_os' || budget.status === 'finalizado') && (
+              <button
+                onClick={() => { onClose(); navigate('/dashboard/ordens-servico') }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium"
+                style={{ background: 'rgba(249,115,22,0.08)', color: '#f97316', cursor: 'pointer' }}>
+                <ClipboardList size={16} /> Ver OS
               </button>
             )}
             <button onClick={() => onDuplicate(budget._id)}
@@ -611,19 +684,26 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
                 <div className="space-y-2">
                   {payments.map(p => {
                     const methodLabel = PAYMENT_METHODS.find(m => m.value === p.method)?.label ?? p.method
-                    const isPending = p.status === 'fiado_pendente'
+                    const isPending  = p.status === 'fiado_pendente'
+                    const isChequeP  = p.status === 'cheque_pendente'
+                    const isChequeD  = p.status === 'cheque_devolvido'
+                    const isNeutral  = isPending || isChequeP || isChequeD
+                    const statusTxt  = isPending ? '⏳ Fiado pendente'
+                      : isChequeP ? `🏦 Cheque Nº ${p.chequeNumero || 'S/N'} · pendente`
+                      : isChequeD ? `⛔ Cheque devolvido`
+                      : '✓ Recebido'
+                    const statusColor = isChequeD ? '#ef4444' : isNeutral ? '#eab308' : '#22c55e'
                     return (
                       <div key={p._id} className="flex items-center justify-between px-3 py-2.5 rounded-xl"
                         style={{ background: 'var(--c-bg2)' }}>
                         <div>
                           <p className="text-sm font-medium" style={{ color: 'var(--c-tx0)' }}>{methodLabel}</p>
                           <p className="text-xs mt-0.5" style={{ color: 'var(--c-tx3)' }}>
-                            {isPending ? '⏳ Fiado pendente' : '✓ Recebido'}
-                            {p.dueDate && isPending && ` · vence ${fmtDate(p.dueDate)}`}
+                            {statusTxt}
+                            {p.dueDate && isNeutral && ` · ${isChequeP ? 'compensa' : 'vence'} ${fmtDate(p.dueDate)}`}
                           </p>
                         </div>
-                        <p className="text-base font-bold"
-                          style={{ color: isPending ? '#eab308' : '#22c55e' }}>
+                        <p className="text-base font-bold" style={{ color: statusColor }}>
                           {fmt(p.amount)}
                         </p>
                       </div>
@@ -1201,6 +1281,15 @@ const OrcamentosPage = () => {
                               className="p-2 rounded-lg"
                               style={{ background: 'rgba(249,115,22,0.1)', color: '#f97316' }}
                               title="Gerar OS">
+                              <ClipboardList size={15} />
+                            </button>
+                          )}
+                          {(b.status === 'em_os' || b.status === 'finalizado') && (
+                            <button
+                              onClick={() => { navigate('/dashboard/ordens-servico') }}
+                              className="p-2 rounded-lg"
+                              style={{ background: 'rgba(249,115,22,0.08)', color: '#f97316' }}
+                              title="Ver OS">
                               <ClipboardList size={15} />
                             </button>
                           )}

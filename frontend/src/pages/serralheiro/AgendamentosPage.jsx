@@ -35,7 +35,9 @@ const TIPOS = {
   entrega:    { label: 'Entrega',      color: '#22c55e', bg: 'rgba(34,197,94,0.15)',   icon: Truck },
   instalacao: { label: 'Instalação',   color: '#a855f7', bg: 'rgba(168,85,247,0.15)', icon: ClipboardList },
   outro:      { label: 'Outro',        color: '#94a3b8', bg: 'rgba(148,163,184,0.15)',icon: Calendar },
-  entrega_os: { label: 'Entrega OS',   color: '#60a5fa', bg: 'rgba(96,165,250,0.15)', icon: ClipboardList },
+  entrega_os:           { label: 'Entrega OS',        color: '#60a5fa', bg: 'rgba(96,165,250,0.15)',  icon: ClipboardList },
+  entrega_os_concluida: { label: 'OS Concluída',      color: '#22c55e', bg: 'rgba(34,197,94,0.1)',    icon: ClipboardList },
+  cheque_vencimento:    { label: 'Cheque Vencendo',   color: '#a855f7', bg: 'rgba(168,85,247,0.15)', icon: Calendar },
 }
 
 const STATUS_LABELS = {
@@ -232,6 +234,34 @@ const EventDetail = ({ ev, onClose, onEdit, onDelete }) => {
               🔗 OS-{String(ev.relatedOS.number).padStart(3,'0')}: {ev.relatedOS.title}
             </p>
           )}
+          {ev.type === 'cheque_vencimento' && (
+            <div className="rounded-xl p-3 space-y-1.5" style={{ background: 'var(--c-bg2)', fontSize: 12 }}>
+              {ev.client?.name && (
+                <div className="flex justify-between">
+                  <span style={{ color: 'var(--c-tx3)' }}>Cliente</span>
+                  <span style={{ color: 'var(--c-tx1)', fontWeight: 600 }}>{ev.client.name}</span>
+                </div>
+              )}
+              {ev.chequeBanco && (
+                <div className="flex justify-between">
+                  <span style={{ color: 'var(--c-tx3)' }}>Banco</span>
+                  <span style={{ color: 'var(--c-tx1)' }}>{ev.chequeBanco}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--c-tx3)' }}>Destino</span>
+                <span style={{ color: ev.chequeDestino === 'fornecedor' ? '#60a5fa' : '#eab308' }}>
+                  {ev.chequeDestino === 'fornecedor' ? '🤝 Fornecedor' : '🏦 A Depositar'}
+                </span>
+              </div>
+              <div className="flex justify-between pt-1" style={{ borderTop: '1px solid var(--c-bd0)' }}>
+                <span style={{ color: 'var(--c-tx3)' }}>Valor</span>
+                <span style={{ color: '#a855f7', fontWeight: 700, fontSize: 14 }}>
+                  {(ev.amount ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </span>
+              </div>
+            </div>
+          )}
           {ev.notes && (
             <p style={{ fontSize: 12, color: 'var(--c-tx3)', fontStyle: 'italic' }}>{ev.notes}</p>
           )}
@@ -401,6 +431,13 @@ const DayView = ({ current, events, onEventClick }) => {
                       🔗 OS-{String(ev.relatedOS.number).padStart(3,'0')}: {ev.relatedOS.title}
                     </p>
                   )}
+                  {ev.type === 'cheque_vencimento' && (
+                    <p style={{ fontSize: 11, color: '#a855f7', marginTop: 4 }}>
+                      {(ev.amount ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                      {ev.chequeBanco ? ` · ${ev.chequeBanco}` : ''}
+                      {ev.chequeDestino === 'fornecedor' ? ' · 🤝 Fornecedor' : ' · 🏦 A Depositar'}
+                    </p>
+                  )}
                 </div>
               </div>
             )
@@ -442,8 +479,14 @@ const AgendamentosPage = () => {
       const { from, to } = getRange()
       const fmt = (d) => d.toISOString().split('T')[0]
       const res = await api.get(`/s/agendamentos?from=${fmt(from)}&to=${fmt(to)}`)
-      const { agendamentos = [], osEvents = [] } = res.data.data
-      setEvents([...agendamentos, ...osEvents])
+      const { agendamentos = [], osEvents = [], chequeEvents = [] } = res.data.data
+      // OS concluídas recebem tipo visual diferente
+      const osTagged = osEvents.map(e =>
+        e.relatedOS?.status === 'concluido'
+          ? { ...e, type: 'entrega_os_concluida' }
+          : e
+      )
+      setEvents([...agendamentos, ...osTagged, ...chequeEvents])
     } catch {
       toast.error('Erro ao carregar agendamentos')
     } finally { setLoading(false) }
