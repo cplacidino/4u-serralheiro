@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import useAutoRefresh from '../../hooks/useAutoRefresh'
 import {
   Plus, Search, FileText, Trash2, Eye, Pencil, X,
@@ -204,6 +205,7 @@ const PaymentForm = ({ budget, onClose, onSaved }) => {
 
 // ─── Modal de visualização / impressão ────────────────────────────────────────
 const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPaymentAdded }) => {
+  const navigate = useNavigate()
   const [payments, setPayments] = useState([])
   const [showPayForm, setShowPayForm] = useState(false)
 
@@ -421,7 +423,7 @@ const ViewModal = ({ budget, onClose, onEdit, onDuplicate, onStatusChange, onPay
               <button
                 onClick={() => {
                   onClose()
-                  window.location.href = `/dashboard/ordens-servico?budgetId=${budget._id}`
+                  navigate(`/dashboard/ordens-servico?budgetId=${budget._id}`)
                 }}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium"
                 style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316' }}>
@@ -942,6 +944,7 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
 
 // ─── Página principal ──────────────────────────────────────────────────────────
 const OrcamentosPage = () => {
+  const navigate = useNavigate()
   const [budgets, setBudgets] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -1194,7 +1197,7 @@ const OrcamentosPage = () => {
                           )}
                           {b.status === 'aprovado' && (
                             <button
-                              onClick={() => { window.location.href = `/dashboard/ordens-servico?budgetId=${b._id}` }}
+                              onClick={() => { navigate(`/dashboard/ordens-servico?budgetId=${b._id}`) }}
                               className="p-2 rounded-lg"
                               style={{ background: 'rgba(249,115,22,0.1)', color: '#f97316' }}
                               title="Gerar OS">
