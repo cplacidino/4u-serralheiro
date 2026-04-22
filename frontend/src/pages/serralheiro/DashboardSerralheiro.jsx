@@ -344,9 +344,19 @@ const DashboardSerralheiro = () => {
               {data.lowStockProducts.map((p) => (
                 <div key={p._id} className="flex items-center justify-between gap-3 py-2"
                   style={{ borderBottom: '1px solid var(--c-bd0)' }}>
-                  <div className="min-w-0">
-                    <p className="text-base font-semibold truncate" style={{ color: 'var(--c-tx0)' }}>{p.name}</p>
-                    <p className="text-sm mt-0.5" style={{ color: 'var(--c-tx3)' }}>{p.category}</p>
+                  <div className="flex items-center gap-3 min-w-0">
+                    {p.imageUrl ? (
+                      <img src={p.imageUrl} alt={p.name}
+                        style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0, border: '1px solid var(--c-bd0)' }} />
+                    ) : (
+                      <div style={{ width: 40, height: 40, borderRadius: 8, background: 'var(--c-bg2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--c-bd0)' }}>
+                        <Package size={18} style={{ color: 'var(--c-tx3)' }} />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold truncate" style={{ color: 'var(--c-tx0)' }}>{p.name}</p>
+                      <p className="text-sm mt-0.5" style={{ color: 'var(--c-tx3)' }}>{p.category}</p>
+                    </div>
                   </div>
                   <span className="text-sm px-3 py-1.5 rounded-full font-semibold flex-shrink-0"
                     style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>

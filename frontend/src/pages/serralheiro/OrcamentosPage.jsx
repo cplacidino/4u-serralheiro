@@ -109,13 +109,18 @@ const Autocomplete = ({ options, value, onChange, placeholder, getLabel, getKey,
             <div key={getKey(o)}
               onMouseDown={e => { e.preventDefault(); onChange(getKey(o)); setOpen(false); setQuery('') }}
               style={{
-                padding: '10px 14px', cursor: 'pointer', fontSize: 14, color: 'var(--c-tx0)',
+                padding: '8px 14px', cursor: 'pointer', fontSize: 14, color: 'var(--c-tx0)',
                 background: getKey(o) === value ? 'rgba(249,115,22,0.1)' : 'transparent',
                 borderBottom: '1px solid var(--c-bd0)',
+                display: 'flex', alignItems: 'center', gap: 10,
               }}
               onMouseEnter={e => { if (getKey(o) !== value) e.currentTarget.style.background = 'var(--c-bg0)' }}
               onMouseLeave={e => { if (getKey(o) !== value) e.currentTarget.style.background = 'transparent' }}>
-              {getLabel(o)}
+              {o.imageUrl && (
+                <img src={o.imageUrl} alt={o.name}
+                  style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', flexShrink: 0, border: '1px solid var(--c-bd0)' }} />
+              )}
+              <span>{getLabel(o)}</span>
             </div>
           ))}
         </div>
@@ -891,14 +896,25 @@ const BudgetModal = ({ budget, onClose, onSaved }) => {
                     {/* Produto do catálogo */}
                     <div>
                       <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx2)' }}>Produto do catálogo (opcional)</label>
-                      <Autocomplete
-                        options={products}
-                        value={item.productId}
-                        onChange={v => setItem(idx, 'productId', v)}
-                        placeholder="Buscar no catálogo..."
-                        getKey={o => o._id}
-                        getLabel={o => o.name + (o.price ? ` — ${fmt(o.price)}` : '')}
-                      />
+                      <div className="flex items-center gap-2">
+                        {item.productId && products.find(p => p._id === item.productId)?.imageUrl && (
+                          <img
+                            src={products.find(p => p._id === item.productId).imageUrl}
+                            alt=""
+                            style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover', flexShrink: 0, border: '1px solid var(--c-bd0)' }}
+                          />
+                        )}
+                        <div className="flex-1">
+                          <Autocomplete
+                            options={products}
+                            value={item.productId}
+                            onChange={v => setItem(idx, 'productId', v)}
+                            placeholder="Buscar no catálogo..."
+                            getKey={o => o._id}
+                            getLabel={o => o.name + (o.price ? ` — ${fmt(o.price)}` : '')}
+                          />
+                        </div>
+                      </div>
                     </div>
                     {/* Descrição */}
                     <div>

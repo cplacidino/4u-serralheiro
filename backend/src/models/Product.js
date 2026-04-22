@@ -23,6 +23,8 @@ const productSchema = new mongoose.Schema(
     stock: { type: Number, default: 0 },
     // Estoque mínimo para alertas
     minStock: { type: Number, default: 0 },
+    imageUrl:  { type: String, default: null },
+    imagePublicId: { type: String, default: null }, // ID no Cloudinary para poder excluir
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

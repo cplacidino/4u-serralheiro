@@ -2,7 +2,8 @@ const express = require('express');
 const { protect, restrict, requireCompany } = require('../middleware/auth.middleware');
 const { getDashboard } = require('../controllers/dashboard.controller');
 const { getClients, getClient, createClient, updateClient, deleteClient } = require('../controllers/client.controller');
-const { getProducts, getProduct, createProduct, updateProduct, deleteProduct, getCategories, adjustStock } = require('../controllers/product.controller');
+const { getProducts, getProduct, createProduct, updateProduct, deleteProduct, deleteProductImage, getCategories, adjustStock } = require('../controllers/product.controller');
+const { upload } = require('../config/cloudinary');
 const { getBudgets, getBudget, createBudget, updateBudget, deleteBudget, duplicateBudget } = require('../controllers/budget.controller');
 const { getUsers, createUser, updateUser, kickUser, getProfile, updateProfile, changePassword } = require('../controllers/user.controller');
 const { getSummary, getTransactions, createTransaction, updateTransaction, deleteTransaction, getDueExpenses, markExpensePaid, generateRecurring } = require('../controllers/finance.controller');
@@ -45,9 +46,10 @@ router.delete('/clients/:id', deleteClient);
 router.get('/products/categories', getCategories);
 router.get('/products', getProducts);
 router.get('/products/:id', getProduct);
-router.post('/products', createProduct);
-router.put('/products/:id', updateProduct);
+router.post('/products', upload.single('image'), createProduct);
+router.put('/products/:id', upload.single('image'), updateProduct);
 router.delete('/products/:id', deleteProduct);
+router.delete('/products/:id/image', deleteProductImage);
 router.post('/products/:id/stock', adjustStock);
 
 // Orçamentos

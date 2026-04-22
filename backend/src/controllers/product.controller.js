@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const { cloudinary } = require('../config/cloudinary');
 const { sendSuccess, sendError } = require('../utils/response');
 
 const getProducts = async (req, res) => {
@@ -42,7 +43,12 @@ const getProduct = async (req, res) => {
 
 const createProduct = async (req, res) => {
   try {
-    const product = await Product.create({ ...req.body, company: req.user.company });
+    const data = { ...req.body, company: req.user.company };
+    if (req.file) {
+      data.imageUrl = req.file.path;
+      data.imagePublicId = req.file.filename;
+    }
+    const product = await Product.create(data);
     return sendSuccess(res, { product }, 'Produto cadastrado com sucesso', 201);
   } catch (error) {
     return sendError(res, error.message || 'Erro ao cadastrar produto', 400);
@@ -51,12 +57,21 @@ const createProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   try {
-    const product = await Product.findOneAndUpdate(
-      { _id: req.params.id, company: req.user.company },
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const product = await Product.findOne({ _id: req.params.id, company: req.user.company });
     if (!product) return sendError(res, 'Produto não encontrado', 404);
+
+    // Se enviou nova imagem, exclui a antiga do Cloudinary
+    if (req.file) {
+      if (product.imagePublicId) {
+        await cloudinary.uploader.destroy(product.imagePublicId).catch(() => {});
+      }
+      req.body.imageUrl = req.file.path;
+      req.body.imagePublicId = req.file.filename;
+    }
+
+    Object.assign(product, req.body);
+    await product.save();
+
     return sendSuccess(res, { product }, 'Produto atualizado com sucesso');
   } catch (error) {
     return sendError(res, error.message || 'Erro ao atualizar produto', 400);
@@ -75,6 +90,25 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+// DELETE /api/s/products/:id/image — Remove apenas a foto
+const deleteProductImage = async (req, res) => {
+  try {
+    const product = await Product.findOne({ _id: req.params.id, company: req.user.company });
+    if (!product) return sendError(res, 'Produto não encontrado', 404);
+
+    if (product.imagePublicId) {
+      await cloudinary.uploader.destroy(product.imagePublicId).catch(() => {});
+    }
+    product.imageUrl = null;
+    product.imagePublicId = null;
+    await product.save();
+
+    return sendSuccess(res, { product }, 'Foto removida com sucesso');
+  } catch {
+    return sendError(res, 'Erro ao remover foto', 500);
+  }
+};
+
 const getCategories = async (req, res) => {
   return sendSuccess(res, {
     categories: Product.schema.statics.CATEGORIES,
@@ -82,11 +116,6 @@ const getCategories = async (req, res) => {
   });
 };
 
-// ─────────────────────────────────────────────
-// POST /api/s/products/:id/stock — Ajustar estoque
-// body: { delta: number, reason?: string }
-// delta positivo = entrada, negativo = saída
-// ─────────────────────────────────────────────
 const adjustStock = async (req, res) => {
   try {
     const { delta, reason } = req.body;
@@ -104,9 +133,9 @@ const adjustStock = async (req, res) => {
     await product.save();
 
     return sendSuccess(res, { product }, `Estoque atualizado para ${newStock} ${product.unit}`);
-  } catch (error) {
+  } catch {
     return sendError(res, 'Erro ao ajustar estoque', 500);
   }
 };
 
-module.exports = { getProducts, getProduct, createProduct, updateProduct, deleteProduct, getCategories, adjustStock };
+module.exports = { getProducts, getProduct, createProduct, updateProduct, deleteProduct, deleteProductImage, getCategories, adjustStock };
