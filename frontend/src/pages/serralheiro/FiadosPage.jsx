@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { HandCoins, RefreshCw, ChevronDown, ChevronUp, X, AlertTriangle, Clock, CheckCircle, CreditCard, Ban } from 'lucide-react'
+import { HandCoins, RefreshCw, ChevronDown, ChevronUp, X, AlertTriangle, Clock, CheckCircle, CreditCard, Ban, Plus } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 
@@ -193,6 +193,137 @@ const ClientCard = ({ group, onReceive }) => {
   )
 }
 
+// ─── Modal de Novo Cheque Avulso ──────────────────────────────────────────────
+const NovoChequeModal = ({ onClose, onSaved }) => {
+  const inp = (err) => ({
+    background: 'var(--c-bg2)', border: `1px solid ${err ? '#ef4444' : 'var(--c-bd1)'}`,
+    color: 'var(--c-tx0)', borderRadius: 10, padding: '9px 12px', fontSize: 13, width: '100%', outline: 'none',
+  })
+  const [amount, setAmount] = useState('')
+  const [dueDate, setDueDate] = useState('')
+  const [clientName, setClientName] = useState('')
+  const [chequeNumero, setChequeNumero] = useState('')
+  const [chequeBanco, setChequeBanco] = useState('')
+  const [chequeAgencia, setChequeAgencia] = useState('')
+  const [chequeConta, setChequeConta] = useState('')
+  const [chequeTitular, setChequeTitular] = useState('')
+  const [chequeDestino, setChequeDestino] = useState('depositar')
+  const [chequeFornecedor, setChequeFornecedor] = useState('')
+  const [note, setNote] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSave = async () => {
+    setError('')
+    if (!amount || Number(amount) <= 0) return setError('Informe o valor.')
+    if (!dueDate) return setError('Informe a data de compensação.')
+    if (!chequeNumero.trim()) return setError('Informe o número do cheque.')
+    setSaving(true)
+    try {
+      await api.post('/s/payments/avulso', {
+        method: 'cheque',
+        amount: Number(amount),
+        dueDate,
+        clientName,
+        description: note,
+        chequeNumero, chequeBanco, chequeAgencia, chequeConta, chequeTitular,
+        chequeDestino,
+        chequeFornecedor: chequeDestino === 'fornecedor' ? chequeFornecedor : undefined,
+      })
+      toast.success('Cheque cadastrado!')
+      onSaved()
+      onClose()
+    } catch (e) {
+      setError(e.response?.data?.message || 'Erro ao salvar.')
+    } finally { setSaving(false) }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto" style={{ background: 'rgba(0,0,0,0.75)' }}>
+      <div className="w-full max-w-md rounded-2xl my-4" style={{ background: 'var(--c-bg1)', border: '1px solid var(--c-bd0)' }}>
+        <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid var(--c-bd0)' }}>
+          <h2 className="text-base font-bold" style={{ color: 'var(--c-tx0)' }}>Cadastrar Cheque</h2>
+          <button onClick={onClose} className="p-1 rounded-lg" style={{ color: 'var(--c-tx3)' }}><X size={18} /></button>
+        </div>
+        <div className="p-5 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Valor (R$) *</label>
+              <input type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)}
+                style={inp(false)} placeholder="0,00" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Data de Compensação *</label>
+              <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={inp(false)} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Nº do Cheque *</label>
+              <input value={chequeNumero} onChange={e => setChequeNumero(e.target.value)} style={inp(false)} placeholder="000000" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Banco</label>
+              <input value={chequeBanco} onChange={e => setChequeBanco(e.target.value)} style={inp(false)} placeholder="Ex: Bradesco" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Agência</label>
+              <input value={chequeAgencia} onChange={e => setChequeAgencia(e.target.value)} style={inp(false)} placeholder="0000" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Conta</label>
+              <input value={chequeConta} onChange={e => setChequeConta(e.target.value)} style={inp(false)} placeholder="00000-0" />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Titular do Cheque</label>
+              <input value={chequeTitular} onChange={e => setChequeTitular(e.target.value)} style={inp(false)} placeholder="Nome do titular" />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>De qual cliente</label>
+              <input value={clientName} onChange={e => setClientName(e.target.value)} style={inp(false)} placeholder="Nome do cliente (opcional)" />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Destino do Cheque</label>
+              <div className="flex gap-2">
+                {[{ v: 'depositar', l: '🏦 A Depositar' }, { v: 'fornecedor', l: '🤝 Para Fornecedor' }].map(opt => (
+                  <button key={opt.v} type="button" onClick={() => setChequeDestino(opt.v)}
+                    className="flex-1 py-2 rounded-xl text-xs font-medium"
+                    style={{
+                      background: chequeDestino === opt.v ? 'rgba(168,85,247,0.2)' : 'var(--c-bg2)',
+                      border: `1px solid ${chequeDestino === opt.v ? '#a855f7' : 'var(--c-bd1)'}`,
+                      color: chequeDestino === opt.v ? '#a855f7' : 'var(--c-tx1)',
+                    }}>
+                    {opt.l}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {chequeDestino === 'fornecedor' && (
+              <div className="col-span-2">
+                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Nome do Fornecedor</label>
+                <input value={chequeFornecedor} onChange={e => setChequeFornecedor(e.target.value)}
+                  style={inp(false)} placeholder="Fornecedor que receberá o cheque" />
+              </div>
+            )}
+            <div className="col-span-2">
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Observação</label>
+              <input value={note} onChange={e => setNote(e.target.value)} style={inp(false)} placeholder="Opcional" />
+            </div>
+          </div>
+          {error && <p className="text-xs" style={{ color: '#ef4444' }}>{error}</p>}
+          <div className="flex gap-3 pt-2">
+            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm"
+              style={{ background: 'var(--c-bg2)', color: 'var(--c-tx1)' }}>Cancelar</button>
+            <button onClick={handleSave} disabled={saving}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+              style={{ background: 'linear-gradient(135deg,#a855f7,#9333ea)', color: 'white', opacity: saving ? 0.7 : 1 }}>
+              {saving ? 'Salvando...' : 'Cadastrar Cheque'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Aba de Cheques ────────────────────────────────────────────────────────────
 const STATUS_CHEQUE = {
   cheque_pendente:    { label: 'Pendente',    color: '#eab308', bg: 'rgba(234,179,8,0.15)' },
@@ -216,6 +347,7 @@ const ChequesTab = () => {
   const [actionId, setActionId] = useState(null)
   const [motivo, setMotivo] = useState('')
   const [showDevolverModal, setShowDevolverModal] = useState(null)
+  const [showNovoCheque, setShowNovoCheque] = useState(false)
 
   const fetchCheques = useCallback(async () => {
     setLoading(true)
@@ -264,6 +396,19 @@ const ChequesTab = () => {
 
   return (
     <div>
+      {/* Botão novo cheque */}
+      <div className="flex justify-end mb-4">
+        <button onClick={() => setShowNovoCheque(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold"
+          style={{ background: 'linear-gradient(135deg,#a855f7,#9333ea)', color: 'white' }}>
+          <Plus size={15} /> Novo Cheque
+        </button>
+      </div>
+
+      {showNovoCheque && (
+        <NovoChequeModal onClose={() => setShowNovoCheque(false)} onSaved={fetchCheques} />
+      )}
+
       {/* Cards de resumo */}
       {resumo && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -346,8 +491,12 @@ const ChequesTab = () => {
 
                     {/* Dados do cheque */}
                     <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs" style={{ color: 'var(--c-tx3)' }}>
-                      <span><strong style={{ color: 'var(--c-tx2)' }}>Cliente:</strong> {c.client?.name ?? '—'}</span>
-                      <span><strong style={{ color: 'var(--c-tx2)' }}>Orçamento:</strong> ORC-{String(c.budget?.number ?? 0).padStart(3,'0')}</span>
+                      <span><strong style={{ color: 'var(--c-tx2)' }}>Cliente:</strong> {c.client?.name || c.clientName || '—'}</span>
+                      {c.budget ? (
+                        <span><strong style={{ color: 'var(--c-tx2)' }}>Orçamento:</strong> ORC-{String(c.budget.number ?? 0).padStart(3,'0')}</span>
+                      ) : (
+                        <span><strong style={{ color: 'var(--c-tx2)' }}>Origem:</strong> <span style={{ color: '#a855f7' }}>Avulso</span></span>
+                      )}
                       {c.chequeBanco && <span><strong style={{ color: 'var(--c-tx2)' }}>Banco:</strong> {c.chequeBanco}</span>}
                       {c.chequeAgencia && <span><strong style={{ color: 'var(--c-tx2)' }}>Agência:</strong> {c.chequeAgencia}</span>}
                       {c.chequeConta && <span><strong style={{ color: 'var(--c-tx2)' }}>Conta:</strong> {c.chequeConta}</span>}

@@ -117,6 +117,52 @@ const addPayment = async (req, res) => {
   }
 };
 
+// POST /api/s/payments/avulso — Cheque ou fiado avulso (sem orçamento vinculado)
+const addAvulsoPayment = async (req, res) => {
+  try {
+    const company = req.user.company;
+    const {
+      method, amount, description, dueDate, clientName,
+      chequeNumero, chequeBanco, chequeAgencia, chequeConta, chequeTitular,
+      chequeDestino, chequeFornecedor,
+    } = req.body;
+
+    const isFiado  = method === 'fiado';
+    const isCheque = method === 'cheque';
+
+    if (!isFiado && !isCheque)
+      return sendError(res, 'Método deve ser cheque ou fiado para lançamento avulso', 400);
+    if (!dueDate)
+      return sendError(res, 'Data de vencimento é obrigatória', 400);
+    if (!amount || Number(amount) <= 0)
+      return sendError(res, 'Valor inválido', 400);
+
+    const payment = await SalePayment.create({
+      company,
+      source: 'avulso',
+      method,
+      amount: Number(amount),
+      status: isFiado ? 'fiado_pendente' : 'cheque_pendente',
+      dueDate: new Date(dueDate),
+      note: description || '',
+      clientName: clientName || '',
+      chequeNumero:     isCheque ? chequeNumero     : null,
+      chequeBanco:      isCheque ? chequeBanco      : null,
+      chequeAgencia:    isCheque ? chequeAgencia    : null,
+      chequeConta:      isCheque ? chequeConta      : null,
+      chequeTitular:    isCheque ? chequeTitular    : null,
+      chequeDestino:    isCheque ? (chequeDestino || 'depositar') : null,
+      chequeFornecedor: isCheque && chequeDestino === 'fornecedor' ? chequeFornecedor : null,
+      createdBy: req.user.id,
+    });
+
+    return sendSuccess(res, { payment }, 'Lançamento registrado', 201);
+  } catch (err) {
+    console.error('Erro ao criar lançamento avulso:', err);
+    return sendError(res, 'Erro ao registrar lançamento', 500);
+  }
+};
+
 // POST /api/s/payments/:id/receive — Receber fiado
 const receiveFiado = async (req, res) => {
   try {
@@ -192,12 +238,15 @@ const getFiados = async (req, res) => {
       .populate('createdBy', 'name')
       .sort({ dueDate: 1, createdAt: 1 });
 
-    // Agrupa por cliente
+    // Agrupa por cliente (avulsos sem cliente ficam em grupo próprio)
     const byClient = {};
     fiados.forEach(f => {
-      const cid = f.client._id.toString();
+      const cid = f.client ? f.client._id.toString() : `avulso-${f.clientName || f._id}`;
       if (!byClient[cid]) {
-        byClient[cid] = { client: f.client, total: 0, items: [] };
+        byClient[cid] = {
+          client: f.client || { _id: cid, name: f.clientName || 'Avulso', phone: null },
+          total: 0, items: [],
+        };
       }
       byClient[cid].total += f.amount;
       byClient[cid].items.push(f);
@@ -346,4 +395,4 @@ const getNotificationCount = async (req, res) => {
   }
 };
 
-module.exports = { getPaymentsByBudget, addPayment, receiveFiado, deletePayment, getFiados, getCheques, compensarCheque, devolverCheque, getNotificationCount };
+module.exports = { getPaymentsByBudget, addPayment, addAvulsoPayment, receiveFiado, deletePayment, getFiados, getCheques, compensarCheque, devolverCheque, getNotificationCount };

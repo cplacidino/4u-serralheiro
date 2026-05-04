@@ -76,10 +76,22 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
   const [paymentMethod, setPaymentMethod] = useState(tx?.paymentMethod ?? '')
   const [recorrente, setRecorrente] = useState(false)
   const [diaVencimento, setDiaVencimento] = useState('')
+  // Campos específicos de cheque (para receita com cheque futuro)
+  const [chequeNumero, setChequeNumero] = useState('')
+  const [chequeBanco, setChequeBanco] = useState('')
+  const [chequeAgencia, setChequeAgencia] = useState('')
+  const [chequeConta, setChequeConta] = useState('')
+  const [chequeTitular, setChequeTitular] = useState('')
+  const [chequeDestino, setChequeDestino] = useState('depositar')
+  const [chequeFornecedor, setChequeFornecedor] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const handleTypeChange = (t) => { setType(t); setCategory(''); setGroup(''); setAgendarPagar(false); setPaymentMethod('') }
+  const handleTypeChange = (t) => {
+    setType(t); setCategory(''); setGroup(''); setAgendarPagar(false); setPaymentMethod('')
+    setChequeNumero(''); setChequeBanco(''); setChequeAgencia(''); setChequeConta('')
+    setChequeTitular(''); setChequeDestino('depositar'); setChequeFornecedor('')
+  }
 
   const PAYMENT_OPTS = [
     { value: '', label: 'Não informado' },
@@ -89,6 +101,7 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
     { value: 'cartão_crédito', label: 'Cartão Crédito' },
     { value: 'transferência', label: 'Transferência' },
     { value: 'cheque', label: 'Cheque' },
+    { value: 'fiado', label: 'Fiado' },
     { value: 'outro', label: 'Outro' },
   ]
 
@@ -96,6 +109,15 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
   const catOptions = type === 'receita'
     ? (categories?.receita ?? [])
     : (group ? (categoryGroups?.[group] ?? []) : [])
+
+  // Detecta se a data selecionada é futura (amanhã ou depois)
+  const dateInUse = date // para receita sem "agendar", é sempre `date`
+  const isFutureDate = dateInUse && (() => {
+    const sel = new Date(dateInUse); sel.setHours(23, 59, 59, 999)
+    return sel > new Date()
+  })()
+  const willGoToCheque = !isEdit && type === 'receita' && paymentMethod === 'cheque' && isFutureDate
+  const willGoToFiado  = !isEdit && type === 'receita' && paymentMethod === 'fiado'  && isFutureDate
 
   const handleSave = async () => {
     setError('')
@@ -106,9 +128,32 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
       return setError('Informe o dia de vencimento (1–31).')
     if (!recorrente && agendarPagar && !dueDate) return setError('Data de vencimento é obrigatória.')
     if (!recorrente && !agendarPagar && !date) return setError('Data é obrigatória.')
+    if (willGoToCheque && !chequeNumero) return setError('Informe o número do cheque.')
 
     setSaving(true)
     try {
+      // Receita com cheque/fiado de data futura → vai para seção específica, não como receita imediata
+      if (willGoToCheque || willGoToFiado) {
+        await api.post('/s/payments/avulso', {
+          method: paymentMethod,
+          amount: Number(amount),
+          description,
+          dueDate: date,
+          clientName: supplier || '',
+          chequeNumero:     willGoToCheque ? chequeNumero     : undefined,
+          chequeBanco:      willGoToCheque ? chequeBanco      : undefined,
+          chequeAgencia:    willGoToCheque ? chequeAgencia    : undefined,
+          chequeConta:      willGoToCheque ? chequeConta      : undefined,
+          chequeTitular:    willGoToCheque ? chequeTitular    : undefined,
+          chequeDestino:    willGoToCheque ? chequeDestino    : undefined,
+          chequeFornecedor: willGoToCheque && chequeDestino === 'fornecedor' ? chequeFornecedor : undefined,
+        })
+        toast.success(willGoToCheque
+          ? '🏦 Cheque registrado! Aparecerá na aba de Cheques.'
+          : '📋 Fiado registrado! Aparecerá na aba de Fiados.')
+        onSaved(); onClose(); return
+      }
+
       const payload = { type, category, description, amount: Number(amount) }
       if (recorrente && type === 'despesa') {
         payload.recorrente = true
@@ -194,7 +239,7 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
 
           <Field label="Descrição *">
             <input value={description} onChange={e => setDescription(e.target.value)}
-              placeholder="Ex: Compra de vergalhões" style={inputCls(!description && error)} />
+              placeholder="Ex: Serviço de portão, venda de material..." style={inputCls(!description && error)} />
           </Field>
 
           <Field label="Valor (R$) *">
@@ -212,11 +257,83 @@ const TransactionModal = ({ tx, categories, categoryGroups, onClose, onSaved }) 
             </Field>
           )}
 
-          {/* Fornecedor / Funcionário */}
+          {/* Fornecedor / Cliente */}
           <Field label={type === 'receita' ? 'Cliente / Observação' : 'Fornecedor / Funcionário'}>
             <input value={supplier} onChange={e => setSupplier(e.target.value)}
               placeholder={type === 'receita' ? 'Ex: João Silva, serviço avulso...' : 'Ex: João Silva, Posto Shell...'} style={inputCls(false)} />
           </Field>
+
+          {/* Aviso de redirecionamento para cheque/fiado futuro */}
+          {(willGoToCheque || willGoToFiado) && (
+            <div className="rounded-xl px-4 py-3 text-sm space-y-1"
+              style={{ background: willGoToCheque ? 'rgba(168,85,247,0.12)' : 'rgba(249,115,22,0.12)', border: `1px solid ${willGoToCheque ? 'rgba(168,85,247,0.4)' : 'rgba(249,115,22,0.4)'}` }}>
+              <p className="font-semibold" style={{ color: willGoToCheque ? '#a855f7' : '#f97316' }}>
+                {willGoToCheque ? '🏦 Será registrado como Cheque a Compensar' : '📋 Será registrado como Fiado'}
+              </p>
+              <p style={{ color: 'var(--c-tx2)', fontSize: 12 }}>
+                {willGoToCheque
+                  ? 'Data futura com cheque → vai para a aba Cheques. A receita só entra no financeiro quando o cheque for compensado.'
+                  : 'Data futura com fiado → vai para a aba Fiados. A receita só entra no financeiro quando o fiado for recebido.'}
+              </p>
+            </div>
+          )}
+
+          {/* Campos de cheque quando receita + cheque + data futura */}
+          {willGoToCheque && (
+            <div className="space-y-3 rounded-xl p-4" style={{ background: 'var(--c-bg2)', border: '1px solid var(--c-bd1)' }}>
+              <p className="text-xs font-semibold uppercase" style={{ color: '#a855f7' }}>Dados do Cheque</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Nº do Cheque *</label>
+                  <input value={chequeNumero} onChange={e => setChequeNumero(e.target.value)}
+                    style={inputCls(false)} placeholder="000000" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Banco</label>
+                  <input value={chequeBanco} onChange={e => setChequeBanco(e.target.value)}
+                    style={inputCls(false)} placeholder="Ex: Bradesco" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Agência</label>
+                  <input value={chequeAgencia} onChange={e => setChequeAgencia(e.target.value)}
+                    style={inputCls(false)} placeholder="0000" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Conta</label>
+                  <input value={chequeConta} onChange={e => setChequeConta(e.target.value)}
+                    style={inputCls(false)} placeholder="00000-0" />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Titular</label>
+                  <input value={chequeTitular} onChange={e => setChequeTitular(e.target.value)}
+                    style={inputCls(false)} placeholder="Nome do titular" />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-tx1)' }}>Destino</label>
+                  <div className="flex gap-2">
+                    {[{ v: 'depositar', l: '🏦 A Depositar' }, { v: 'fornecedor', l: '🤝 Para Fornecedor' }].map(opt => (
+                      <button key={opt.v} type="button" onClick={() => setChequeDestino(opt.v)}
+                        className="flex-1 py-2 rounded-xl text-xs font-medium"
+                        style={{
+                          background: chequeDestino === opt.v ? 'rgba(168,85,247,0.2)' : 'var(--c-bg0)',
+                          border: `1px solid ${chequeDestino === opt.v ? '#a855f7' : 'var(--c-bd1)'}`,
+                          color: chequeDestino === opt.v ? '#a855f7' : 'var(--c-tx1)',
+                        }}>
+                        {opt.l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {chequeDestino === 'fornecedor' && (
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--c-tx1)' }}>Nome do Fornecedor</label>
+                    <input value={chequeFornecedor} onChange={e => setChequeFornecedor(e.target.value)}
+                      style={inputCls(false)} placeholder="Fornecedor que receberá o cheque" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Toggle recorrente (somente despesa nova) */}
           {type === 'despesa' && !isEdit && (
